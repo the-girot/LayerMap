@@ -1,0 +1,38 @@
+{
+  "name": "self-admin",
+  "version": "1.0.0",
+  "keywords": [],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.20.0",
+    "@primeuix/themes": "latest",
+    "@primevue/auto-import-resolver": "4.3.1",
+    "@primevue/forms": "4.3.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^9.20.1",
+    "eslint-plugin-vue": "^9.32.0",
+    "pinia": "^3.0.1",
+    "postcss": "^8.4.31",
+    "prettier": "^3.5.1",
+    "primeicons": "^7.0.0",
+    "primevue": "4.3.1",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-primeui": "^0.4.0",
+    "unplugin-vue-components": "latest",
+    "vite-plugin-vue-devtools": "^7.7.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "main": "src/App.vue",
+  "devDependencies": {
+    "vite": "^6.4.1"
+  }
+}
