@@ -6,9 +6,10 @@
  * - Информацию об источнике
  * - Таблицу колонок с возможностью для каждой выбрать показатель или измерение из РПИ
  */
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useProjectsStore } from "@/stores/projects";
+import { useProject } from "@/composables/useProject";
 import { COLUMN_TYPE_LABELS, COLUMN_TYPE_COLORS } from "@/stores/workflow";
 import { formatDate, formatNumber } from "@/utils/format";
 import { getSourceTypeSeverity } from "@/utils/status";
@@ -22,13 +23,19 @@ import Message from "primevue/message";
 const route = useRoute();
 const router = useRouter();
 const projectsStore = useProjectsStore();
+const { projectId, project, loadProjectData, loading, error } = useProject();
 
-const projectId = computed(() => route.params.id);
 const sourceId = computed(() => route.params.sourceId);
-const project = computed(() => projectsStore.getProjectById(projectId.value));
 const source = computed(() =>
     projectsStore.getSourceById(projectId.value, sourceId.value)
 );
+
+// Загрузка данных при монтировании компонента
+onMounted(async () => {
+    if (projectId.value) {
+        await loadProjectData();
+    }
+});
 
 // Получаем таблицы маппинга проекта для отображения колонок
 const mappingTables = computed(() =>
@@ -90,7 +97,22 @@ function navigateToMapping() {
 </script>
 
 <template>
-    <div v-if="source && project" class="p-4 md:p-6">
+    <!-- Loading state -->
+    <div v-if="loading" class="flex min-h-screen items-center justify-center">
+        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="error" class="flex min-h-screen flex-col items-center justify-center py-16 text-center">
+        <i class="pi pi-exclamation-circle text-5xl text-app-error"></i>
+        <h2 class="mt-4 text-xl font-semibold text-app-text">Ошибка загрузки</h2>
+        <p class="mt-2 text-sm text-app-text-muted">{{ error }}</p>
+        <Button label="Обновить" icon="pi pi-refresh" class="mt-4 !rounded-lg" :pt="{ root: 'min-h-[44px]' }"
+            @click="loadProjectData" />
+    </div>
+
+    <!-- Source detail -->
+    <div v-else-if="source && project" class="p-4 md:p-6">
         <!-- Breadcrumbs -->
         <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm">
             <router-link :to="{ name: 'ProjectsList' }"

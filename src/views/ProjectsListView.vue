@@ -2,6 +2,7 @@
 /**
  * ProjectsListView — список проектов в виде карточек.
  */
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectsStore } from "@/stores/projects";
 import { formatDate } from "@/utils/format";
@@ -13,7 +14,12 @@ import Button from "primevue/button";
 const router = useRouter();
 const projectsStore = useProjectsStore();
 
-const projects = projectsStore.projects;
+const projects = computed(() => projectsStore.projects);
+
+// Загрузка проектов при монтировании компонента
+onMounted(async () => {
+    await projectsStore.loadProjects();
+});
 
 function navigateToProject(project) {
     router.push({ name: "ProjectDetail", params: { id: project.id } });

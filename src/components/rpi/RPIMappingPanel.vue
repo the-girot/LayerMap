@@ -7,28 +7,28 @@ import InputText from 'primevue/inputtext';
 const props = defineProps({
     panelOpen: {
         type: Boolean,
-        required: true
+        required: false
     },
     panelMode: {
         type: String,
-        required: true
+        required: false
     },
     form: {
         type: Object,
-        required: true,
+        required: false,
         default: () => ({})
     },
     formTouched: {
         type: Boolean,
-        required: true
+        required: false
     },
     projectSources: {
         type: Array,
-        required: true
+        required: false
     },
     columnOptions: {
         type: Array,
-        required: true
+        required: false
     },
     selectedColumn: {
         type: Object,
@@ -40,7 +40,7 @@ const props = defineProps({
     },
     projectMappingTables: {
         type: Array,
-        required: true
+        required: false
     }
 });
 
@@ -67,11 +67,11 @@ function handleFieldChange(option) {
 }
 
 const ownershipOptions = ['Аналитика', 'Маркетинг', 'Гео', 'Техническое'];
-const measurementTypeOptions = ['Измерение', 'Метрика'];
+const measurementTypeOptions = ['dimension', 'metric'];
 
 const statusOptions = [
     { value: 'approved', label: 'Утв.' },
-    { value: 'review', label: 'Проверка' },
+    { value: 'in_review', label: 'Проверка' },
     { value: 'draft', label: 'Черновик' },
 ];
 </script>
@@ -141,11 +141,11 @@ const statusOptions = [
                     <!-- Source -->
                     <div class="space-y-1.5">
                         <label class="text-[11px] font-semibold uppercase tracking-wide text-app-text-muted">
-                            Источник данных
+                            Источник данных <span class="text-app-text-muted font-normal">(необязательно)</span>
                         </label>
                         <Select v-model="form.source" :options="projectSources" optionLabel="name" optionValue="name"
-                            placeholder="Выберите источник" :pt="{ root: 'w-full rounded-lg text-xs' }"
-                            @change="(e) => handleSourceChange(e.value)">
+                            placeholder="Выберите источник (необязательно)" :pt="{ root: 'w-full rounded-lg text-xs' }"
+                            clearable @change="(e) => handleSourceChange(e.value)">
                             <template #option="slotProps">
                                 <div class="flex items-center gap-2">
                                     <span
@@ -172,6 +172,9 @@ const statusOptions = [
                                 <span v-else class="text-app-text-muted">{{ slotProps.placeholder }}</span>
                             </template>
                         </Select>
+                        <p class="text-[10px] text-app-text-muted">
+                            Можно оставить пустым для ручного ввода полей
+                        </p>
                     </div>
 
                     <!-- Block -->
@@ -280,10 +283,11 @@ const statusOptions = [
                             class="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-app-text-muted">
                             Поле источника <span class="text-app-error text-[10px] font-normal">req.</span>
                         </label>
-                        <Select v-model="form.objectField" :options="columnOptions" optionLabel="label"
-                            optionValue="value" placeholder="Сначала выберите источник" :disabled="!form.source"
+                        <!-- Select from source columns (if source is selected) -->
+                        <Select v-if="form.source && columnOptions.length > 0" v-model="form.objectField"
+                            :options="columnOptions" optionLabel="label" optionValue="value" placeholder="Выберите поле"
                             :pt="{ root: 'w-full rounded-lg text-xs' }"
-                            :class="{ 'border-app-error': formTouched && !form }"
+                            :class="{ 'border-app-error': formTouched && !form.objectField }"
                             @change="(e) => handleFieldChange(e.value)">
                             <template #option="slotProps">
                                 <div class="flex items-center gap-2 py-1">
@@ -300,7 +304,7 @@ const statusOptions = [
                                     </span>
                                     <div class="flex-1">
                                         <span class="text-xs font-mono font-medium">{{ slotProps.option.value
-                                            }}</span>
+                                        }}</span>
                                         <span class="ml-1.5 text-[10px] text-app-text-muted">{{
                                             slotProps.option.dataType }}</span>
                                     </div>
@@ -313,7 +317,7 @@ const statusOptions = [
                             <template #value="slotProps">
                                 <div v-if="slotProps.value" class="flex items-center gap-2">
                                     <span class="text-xs font-mono font-bold text-primary">{{ slotProps.value
-                                        }}</span>
+                                    }}</span>
                                     <span v-if="selectedColumn" class="text-[10px] text-app-text-muted">
                                         ({{ selectedColumn.isCalculated ? 'расчетный' : 'базовый' }})
                                     </span>
@@ -323,8 +327,16 @@ const statusOptions = [
                                 </span>
                             </template>
                         </Select>
+                        <!-- Manual input when no source or no columns -->
+                        <InputText v-else v-model="form.objectField" placeholder="Введите название поля вручную"
+                            :pt="{ root: 'w-full rounded-lg text-xs' }"
+                            :class="{ 'border-app-error': formTouched && !form.objectField }" />
+                        <p v-if="!form.source" class="text-[10px] text-app-text-muted">
+                            <i class="pi pi-info-circle text-[8px] mr-1" />
+                            Поле вводится вручную (без привязки к источнику)
+                        </p>
                         <!-- Source indicator -->
-                        <div v-if="form.source"
+                        <div v-if="form.source && columnOptions.length > 0"
                             class="flex items-center gap-1.5 rounded-md bg-app-surface-hover px-2 py-1">
                             <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded text-[8px] font-bold"
                                 :class="selectedSourceObj?.type === 'API' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'">

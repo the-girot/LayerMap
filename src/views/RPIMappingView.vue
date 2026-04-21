@@ -7,7 +7,7 @@
  * - Колонки таблиц (с выбором типа: Показатель или Измерение)
  * - Основная таблица записей РПИ
  */
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectsStore } from "@/stores/projects";
 import { useProject } from "@/composables/useProject";
@@ -21,10 +21,17 @@ import Button from "primevue/button";
 
 const router = useRouter();
 const projectsStore = useProjectsStore();
-const { projectId, project } = useProject();
+const { projectId, project, loadProjectData, loading, error } = useProject();
 
 // ── Data ───────────────────────────────────────────────────────
 const rows = computed(() => projectsStore.getRPIMappingsByProjectId(projectId.value));
+
+// Загрузка данных при монтировании компонента
+onMounted(async () => {
+    if (projectId.value) {
+        await loadProjectData();
+    }
+});
 
 // ── Filters (composable) ──────────────────────────────────────
 const {
@@ -58,7 +65,9 @@ const selectedSourceObj = computed(() =>
 
 const availableColumns = computed(() => {
     if (!selectedSourceObj.value) return [];
-    const table = projectMappingTables.value.find((t) => t.name === selectedSourceObj.value.name);
+    const tableId = selectedSourceObj.value.mappingTableId;
+    if (!tableId) return [];
+    const table = projectMappingTables.value.find((t) => t.id === tableId);
     return table?.columns || [];
 });
 
@@ -122,6 +131,7 @@ const tableProps = computed(() => ({
     projectId: projectId.value,
     mappingTables: projectMappingTables.value,
     sources: projectSources.value,
+    activeRow: activeRow.value,  // ← добавить
 }));
 
 const panelProps = computed(() => ({
@@ -138,16 +148,43 @@ const panelProps = computed(() => ({
 </script>
 
 <template>
-    <div v-if="project" class="flex min-h-screen flex-col">
+    <!-- Loading state -->
+    <div v-if="loading" class="flex min-h-screen items-center justify-center">
+        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="error" class="flex min-h-screen flex-col items-center justify-center py-16 text-center">
+        <i class="pi pi-exclamation-circle text-5xl text-app-error"></i>
+        <h2 class="mt-4 text-xl font-semibold text-app-text">Ошибка загрузки</h2>
+        <p class="mt-2 text-sm text-app-text-muted">{{ error }}</p>
+        <Button label="Обновить" icon="pi pi-refresh" class="mt-4 !rounded-lg" :pt="{ root: 'min-h-[44px]' }"
+            @click="loadProjectData" />
+    </div>
+
+    <!-- RPI Mapping view -->
+    <div v-else-if="project" class="flex min-h-screen flex-col">
         <RPIMappingHeader v-bind="headerProps" @back="goBack" @add="openAddPanel" />
         <RPIMappingToolbar v-model:search="search" v-model:selectedStatus="selectedStatus"
             v-model:selectedOwnership="selectedOwnership" v-model:selectedMeasurementType="selectedMeasurementType"
             v-model:selectedCalculatedType="selectedCalculatedType" :quick-filters="quickFilters"
             :filtered-count="filteredRows.length" :total-rows="rows.length" @reset="resetFilters" />
         <div class="flex flex-1 flex-col md:flex-row">
-            <RPIMappingTable v-bind="tableProps" @edit="openEditPanel" @page="onPage" />
+            <RPIMappingTable v-bind="tableProps" @row-select="activeRow = $event" @edit="openEditPanel"
+                @page="onPage" />
             <RPIMappingPanel v-bind="panelProps" @close="closePanel" @save="saveRule" @delete="deleteRule"
-                @source-change="form.source = $event" @field-change="onObjectFieldChange" />
+                @source-change="(value) => {
+                    form.source = value;
+                    if (!value) {
+                        // При очистке источника сбрасываем привязку к колонке,
+                        // но сохраняем objectField если он был введен вручную
+                        form.sourceColumnId = null;
+                    } else {
+                        // При выборе источника сбрасываем поле для выбора из новых опций
+                        form.objectField = null;
+                        form.sourceColumnId = null;
+                    }
+                }" @field-change="onObjectFieldChange" />
         </div>
     </div>
 
@@ -160,7 +197,7 @@ const panelProps = computed(() => ({
     </div>
 </template>
 
-<style scoped>
+<style>
 /* ── Side panel slide transition ── */
 .side-panel-enter-active,
 .side-panel-leave-active {

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Paginator from 'primevue/paginator';
@@ -7,10 +7,16 @@ import Badge from 'primevue/badge';
 import { getProjectSourceByProjectIdAndName, getColumnTypeBadgeClass, getColumnTypeBadge } from '@/utils/mapping';
 import { getStatusPillClass, getStatusDotClass, getMappingStatusLabel } from '@/utils/status';
 
+
+const activeRow = ref(null);
 const props = defineProps({
     rows: {
         type: Array,
         required: true
+    },
+    activeRow: {
+        type: Object,
+        default: null
     },
     filteredCount: {
         type: Number,
@@ -67,7 +73,8 @@ function getSourceType(sourceName) {
 
 <template>
     <div class="min-w-0 flex-1 overflow-x-auto">
-        <DataTable :value="paginatedRows" responsiveLayout="scroll" selectionMode="single" v-model:selection="activeRow"
+        <DataTable :value="paginatedRows" selectionMode="single" :selection="activeRow"
+            @update:selection="emit('row-select', $event); emit('edit', $event)" responsiveLayout="scroll"
             @rowSelect="handleRowSelect" class="mapping-table w-full" scrollable scrollHeight="calc(100vh - 200px)" :pt="{
                 root: 'text-sm',
             }">
@@ -213,7 +220,7 @@ function getSourceType(sourceName) {
             <Column field="dateRemoved" header="Дата выведения" style="min-width: 110px">
                 <template #body="{ data }">
                     <span v-if="data.dateRemoved" class="text-xs text-app-error">{{ data.dateRemoved
-                    }}</span>
+                        }}</span>
                     <span v-else class="text-xs text-content-faint">—</span>
                 </template>
             </Column>

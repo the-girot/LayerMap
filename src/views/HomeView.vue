@@ -1,8 +1,17 @@
 <script setup>
+import { onMounted } from 'vue';
+import { useProjectsStore } from '@/stores/projects';
 import KpiCards from '@/components/home/KpiCards.vue';
 import ProjectsTable from '@/components/home/ProjectsTable.vue';
 import QuickActions from '@/components/home/QuickActions.vue';
 import Button from 'primevue/button';
+
+const projectsStore = useProjectsStore();
+
+// Загрузка проектов при монтировании компонента
+onMounted(async () => {
+    await projectsStore.loadProjects();
+});
 </script>
 
 <template>

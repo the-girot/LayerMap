@@ -54,6 +54,7 @@ export const mockSources = {
     {
       id: 101,
       name: "metrika_sessions",
+      mappingTableId: 101,
       description: "Сеансы Яндекс Метрики",
       type: "API",
       rowCount: 150000,
@@ -62,6 +63,7 @@ export const mockSources = {
     {
       id: 102,
       name: "metrika_goals",
+      mappingTableId: 102,
       description: "Цели и конверсии",
       type: "API",
       rowCount: 45000,
@@ -70,6 +72,7 @@ export const mockSources = {
     {
       id: 103,
       name: "metrika_users",
+      mappingTableId: 103,
       description: "Пользователи",
       type: "DB",
       rowCount: 80000,
@@ -263,8 +266,8 @@ export const mockMappingTables = {
     },
     {
       id: 102,
-      name: "new_test",
-      description: "Тестовая таблица",
+      name: "metrika_goals",
+      description: "Цели и конверсии",
       columns: [
         {
           id: 1021,
@@ -288,6 +291,43 @@ export const mockMappingTables = {
         },
       ],
     },
+    {
+  id: 103,
+  name: "metrika_users",
+  description: "Пользователи",
+  columns: [
+    {
+      id: 1031,
+      name: "userId",
+      type: "dimension",
+      isCalculated: false,
+      formula: null,
+      dataType: "UInt64",
+      description: "Идентификатор пользователя",
+      rpiMappingId: null,
+    },
+    {
+      id: 1032,
+      name: "userLogin",
+      type: "dimension",
+      isCalculated: false,
+      formula: null,
+      dataType: "String",
+      description: "Логин пользователя",
+      rpiMappingId: null,
+    },
+    {
+      id: 1033,
+      name: "registrationDate",
+      type: "dimension",
+      isCalculated: false,
+      formula: null,
+      dataType: "DateTime",
+      description: "Дата регистрации",
+      rpiMappingId: null,
+    },
+  ],
+},
   ],
   2: [],
   3: [],

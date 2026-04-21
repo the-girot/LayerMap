@@ -85,10 +85,10 @@ export function useRPIMappingForm(rows, store, projectId) {
     }
 
     if (panelMode.value === "add") {
-      store.addRPIMapping(projectId.value, {
+      store.createRPIMapping(projectId.value, {
         ownership: form.ownership || "Аналитика",
         status: form.status || "draft",
-        source: form.source || "",
+        source: form.source || null, // Разрешаем null для источника
         block: form.block || "",
         measurementType: form.measurementType || "Измерение",
         isCalculated: form.isCalculated || false,
@@ -105,7 +105,7 @@ export function useRPIMappingForm(rows, store, projectId) {
       store.updateRPIMapping(projectId.value, activeRow.value.id, {
         ownership: form.ownership,
         status: form.status,
-        source: form.source,
+        source: form.source || null, // Разрешаем null для источника
         block: form.block,
         measurementType: form.measurementType,
         isCalculated: form.isCalculated,
