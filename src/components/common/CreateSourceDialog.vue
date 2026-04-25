@@ -24,7 +24,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["update:modelValue", "create"]);
+const emit = defineEmits(["update:modelValue", "create", "error"]);
 
 const visible = ref(props.modelValue);
 const loading = ref(false);
@@ -36,10 +36,16 @@ const form = ref({
     mapping_table_id: null,
 });
 
+// Ошибки валидации от сервера (422)
+const serverErrors = ref({});
+
 watch(
     () => props.modelValue,
     (value) => {
         visible.value = value;
+        if (value) {
+            resetForm();
+        }
     },
 );
 
@@ -58,6 +64,12 @@ function resetForm() {
         row_count: 0,
         mapping_table_id: null,
     };
+    serverErrors.value = {};
+}
+
+function handleServerValidationErrors(errors) {
+    // Ожидаем формат: { name: ["Ошибка 1"], description: ["Ошибка 2"] }
+    serverErrors.value = errors;
 }
 
 async function handleSubmit() {
@@ -69,6 +81,11 @@ async function handleSubmit() {
     try {
         emit("create", { ...form.value, project_id: props.projectId });
         resetForm();
+    } catch (err) {
+        // Если ошибка 422 с полями, передаем их родителю
+        if (err.status === 422 && err.errors) {
+            handleServerValidationErrors(err.errors);
+        }
     } finally {
         loading.value = false;
     }
@@ -88,14 +105,17 @@ function handleCancel() {
                 <label for="source-name" class="block text-sm font-medium text-content mb-1">Название <span
                         class="text-app-error">*</span></label>
                 <InputText id="source-name" v-model="form.name" placeholder="Введите название источника" class="w-full"
-                    :class="{ 'p-invalid': !form.name }" />
-                <small v-if="!form.name" class="text-app-error text-xs">Название обязательно для заполнения</small>
+                    :class="{ 'p-invalid': serverErrors.name }" />
+                <small v-if="serverErrors.name" class="text-app-error text-xs">{{ serverErrors.name[0] }}</small>
+                <small v-else-if="!form.name" class="text-app-error text-xs">Название обязательно для заполнения</small>
             </div>
 
             <div>
                 <label for="source-description" class="block text-sm font-medium text-content mb-1">Описание</label>
                 <Textarea id="source-description" v-model="form.description" placeholder="Введите описание источника"
-                    rows="3" class="w-full" />
+                    rows="3" class="w-full" :class="{ 'p-invalid': serverErrors.description }" />
+                <small v-if="serverErrors.description" class="text-app-error text-xs">{{ serverErrors.description[0]
+                    }}</small>
             </div>
 
             <div>
@@ -103,14 +123,18 @@ function handleCancel() {
                         class="text-app-error">*</span></label>
                 <Dropdown id="source-type" v-model="form.type"
                     :options="[{ label: 'DB', value: 'DB' }, { label: 'API', value: 'API' }, { label: 'FILE', value: 'FILE' }, { label: 'STREAM', value: 'STREAM' }]"
-                    option-label="label" option-value="value" placeholder="Выберите тип" class="w-full" />
+                    option-label="label" option-value="value" placeholder="Выберите тип" class="w-full"
+                    :class="{ 'p-invalid': serverErrors.type }" />
+                <small v-if="serverErrors.type" class="text-app-error text-xs">{{ serverErrors.type[0] }}</small>
             </div>
 
             <div>
                 <label for="source-row-count" class="block text-sm font-medium text-content mb-1">Количество
                     строк</label>
                 <InputText id="source-row-count" v-model.number="form.row_count" type="number" placeholder="0"
-                    class="w-full" />
+                    class="w-full" :class="{ 'p-invalid': serverErrors.row_count }" />
+                <small v-if="serverErrors.row_count" class="text-app-error text-xs">{{ serverErrors.row_count[0]
+                    }}</small>
             </div>
         </div>
 

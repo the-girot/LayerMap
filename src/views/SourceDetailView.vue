@@ -13,6 +13,7 @@ import { useProject } from "@/composables/useProject";
 import { COLUMN_TYPE_LABELS, COLUMN_TYPE_COLORS } from "@/stores/workflow";
 import { formatDate, formatNumber } from "@/utils/format";
 import { getSourceTypeSeverity } from "@/utils/status";
+import { MEASUREMENT_TYPE_MAP } from "@/constants/rpi";
 import Button from "primevue/button";
 import Badge from "primevue/badge";
 import DataTable from "primevue/datatable";
@@ -244,8 +245,9 @@ function navigateToMapping() {
                                     @change="onColumnMappingChange(data, $event.value)" />
                                 <!-- Информация о выбранном РПИ -->
                                 <div v-if="data.rpiMappingId" class="flex items-center gap-1.5">
-                                    <Badge :value="getRPIMappingInfo(data.rpiMappingId)?.measurementType || ''"
-                                        :severity="getRPIMappingInfo(data.rpiMappingId)?.measurementType === 'Метрика' ? 'info' : 'success'"
+                                    <Badge
+                                        :value="MEASUREMENT_TYPE_MAP[getRPIMappingInfo(data.rpiMappingId)?.measurement_type] || getRPIMappingInfo(data.rpiMappingId)?.measurement_type || ''"
+                                        :severity="getRPIMappingInfo(data.rpiMappingId)?.measurement_type === 'metric' ? 'info' : 'success'"
                                         :pt="{ root: 'text-[9px]' }" />
                                     <span class="text-[10px] text-content-muted">
                                         №{{ getRPIMappingInfo(data.rpiMappingId)?.number }}
@@ -294,17 +296,17 @@ function navigateToMapping() {
                         </template>
                     </Column>
 
-                    <Column field="measurementType" header="Тип" style="min-width: 100px">
+                    <Column field="measurement_type" header="Тип" style="min-width: 100px">
                         <template #body="{ data }">
-                            <Badge :value="data.measurementType"
-                                :severity="data.measurementType === 'Метрика' ? 'info' : 'success'"
+                            <Badge :value="MEASUREMENT_TYPE_MAP[data.measurement_type] || data.measurement_type"
+                                :severity="data.measurement_type === 'metric' ? 'info' : 'success'"
                                 :pt="{ root: 'text-[10px]' }" />
                         </template>
                     </Column>
 
-                    <Column field="objectField" header="Объект (поле)" style="min-width: 160px">
+                    <Column field="object_field" header="Объект (поле)" style="min-width: 160px">
                         <template #body="{ data }">
-                            <span class="text-sm font-mono font-bold text-primary">{{ data.objectField }}</span>
+                            <span class="text-sm font-mono font-bold text-primary">{{ data.object_field }}</span>
                         </template>
                     </Column>
 

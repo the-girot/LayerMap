@@ -5,6 +5,132 @@
 
 import { apiClient } from "./client";
 
+// ───────────────────────────────────────────────────────────────
+// Authentication
+// ───────────────────────────────────────────────────────────────
+
+/**
+ * @typedef {Object} AuthCredentials
+ * @property {string} email
+ * @property {string} password
+ * @property {string} [full_name]
+ */
+
+/**
+ * @typedef {Object} AuthResponse
+ * @property {string} access_token
+ * @property {string} token_type
+ * @property {Object} user
+ * @property {number} user.id
+ * @property {string} user.email
+ * @property {string} user.full_name
+ */
+
+/**
+ * @typedef {Object} User
+ * @property {number} id
+ * @property {string} email
+ * @property {string} full_name
+ */
+
+/**
+ * Войти в систему
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<AuthResponse>}
+ */
+export async function login(email, password) {
+  return apiClient.post(
+    "/auth/login",
+    { username: email, password },
+    { form: true },
+  );
+}
+
+/**
+ * Зарегистрироваться в системе
+ * @param {string} email
+ * @param {string} password
+ * @param {string} full_name
+ * @returns {Promise<AuthResponse>}
+ */
+export async function register(email, password, full_name) {
+  return apiClient.post("/auth/register", { email, password, full_name });
+}
+
+/**
+ * Получить информацию о текущем пользователе
+ * @returns {Promise<User>}
+ */
+export async function getCurrentUser() {
+  return apiClient.get("/auth/me");
+}
+
+// ───────────────────────────────────────────────────────────────
+// Projects KPI & Filters
+// ───────────────────────────────────────────────────────────────
+
+/**
+ * @typedef {Object} ProjectKpi
+ * @property {number} total
+ * @property {number} active
+ * @property {number} draft
+ * @property {number} archived
+ */
+
+/**
+ * Получить KPI проектов
+ * @returns {Promise<ProjectKpi>}
+ */
+export async function getProjectKpi() {
+  return apiClient.get("/projects/kpi");
+}
+
+/**
+ * Получить последние проекты
+ * @param {number} [limit=10]
+ * @returns {Promise<Project[]>}
+ */
+export async function getRecentProjects(limit = 10) {
+  return apiClient.get(`/projects/recent?limit=${limit}`);
+}
+
+/**
+ * @typedef {Object} ProjectFilters
+ * @property {string} [status]
+ * @property {string} [search]
+ * @property {number} [page=1]
+ * @property {number} [size=10]
+ * @property {string} [sort_by]
+ * @property {'asc'|'desc'} [sort_dir='asc']
+ */
+
+/**
+ * Получить проекты с фильтрами и пагинацией
+ * @param {ProjectFilters} filters
+ * @returns {Promise<{data: Project[], total: number, page: number, size: number}>}
+ */
+export async function getProjectsWithFilters({
+  status,
+  search,
+  page = 1,
+  size = 10,
+  sort_by,
+  sort_dir = "asc",
+}) {
+  const params = new URLSearchParams();
+  if (status) params.append("status", status);
+  if (search) params.append("search", search);
+  params.append("page", String(page));
+  params.append("size", String(size));
+  if (sort_by) params.append("sort_by", sort_by);
+  if (sort_dir) params.append("sort_dir", sort_dir);
+
+  const queryString = params.toString();
+  const endpoint = queryString ? `/projects?${queryString}` : "/projects";
+  return apiClient.get(endpoint);
+}
+
 /**
  * @typedef {Object} Project
  * @property {number} id
@@ -132,6 +258,18 @@ export async function deleteProject(projectId) {
  */
 export async function getSources(projectId) {
   return apiClient.get(`/projects/${projectId}/sources`);
+}
+
+/**
+ * Получить таблицы маппинга конкретного источника
+ * @param {number|string} projectId
+ * @param {number|string} sourceId
+ * @returns {Promise<MappingTable[]>}
+ */
+export async function getSourceMappingTables(projectId, sourceId) {
+  return apiClient.get(
+    `/projects/${projectId}/sources/${sourceId}/mapping-tables`,
+  );
 }
 
 /**
@@ -391,6 +529,7 @@ export const ProjectsApi = {
   createSource,
   updateSource,
   deleteSource,
+  getSourceMappingTables,
   getMappingTables,
   getMappingTableById,
   createMappingTable,
@@ -407,6 +546,14 @@ export const ProjectsApi = {
   createRPIMapping,
   updateRPIMapping,
   deleteRPIMapping,
+  // Auth
+  login,
+  register,
+  getCurrentUser,
+  // KPI & Filters
+  getProjectKpi,
+  getRecentProjects,
+  getProjectsWithFilters,
 };
 
 export default ProjectsApi;

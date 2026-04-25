@@ -72,8 +72,9 @@
 
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
-import { ProjectsApi } from "@/api/projectsWithMock";
+import { ProjectsApi } from "@/api/projects";
 import { ApiError } from "@/api/client";
+import { useAuthStore } from "@/stores/auth";
 
 export const useProjectsStore = defineStore("projects", () => {
   /** @type {import('vue').Ref<Project[]>} */
@@ -89,6 +90,12 @@ export const useProjectsStore = defineStore("projects", () => {
   const loading = ref(false);
   /** @type {import('vue').Ref<string|null>} */
   const error = ref(null);
+
+  /** KPI проектов */
+  const kpi = ref({ total: 0, active: 0, draft: 0, archived: 0 });
+
+  /** Пагинация проектов */
+  const projectPagination = ref({ total: 0, page: 1, size: 10 });
 
   /** Общее количество источников across all projects */
   const totalSources = computed(() =>
@@ -114,17 +121,90 @@ export const useProjectsStore = defineStore("projects", () => {
   });
 
   /**
-   * Загрузить все проекты
+   * Обработать ошибку API
+   * @param {ApiError} err
    */
-  async function loadProjects() {
+  function handleApiError(err) {
+    error.value = err.message;
+
+    if (err.status === 401) {
+      // Неавторизован — выходим из системы
+      const authStore = useAuthStore();
+      authStore.logout();
+      throw new Error("Session expired. Please login again.");
+    }
+
+    if (err.status === 403) {
+      error.value = "Нет прав доступа";
+    }
+
+    if (err.status === 409) {
+      error.value = "Ресурс уже существует";
+    }
+
+    if (err.status === 422) {
+      // Валидационные ошибки обрабатываются на уровне компонентов
+      error.value = "Ошибка валидации";
+    }
+
+    if (err.status === 0 || err.status >= 500) {
+      error.value = "Сервер недоступен, попробуйте позже";
+    }
+  }
+
+  /**
+   * Загрузить все проекты с фильтрами и пагинацией
+   * @param {Object} [options]
+   * @param {string} [options.status]
+   * @param {string} [options.search]
+   * @param {number} [options.page=1]
+   * @param {number} [options.size=10]
+   * @param {string} [options.sort_by]
+   * @param {'asc'|'desc'} [options.sort_dir='asc']
+   */
+  async function loadProjects({
+    status,
+    search,
+    page = 1,
+    size = 10,
+    sort_by,
+    sort_dir = "asc",
+  } = {}) {
     loading.value = true;
     error.value = null;
     try {
-      const data = await ProjectsApi.getProjects();
-      projects.value = data;
+      const data = await ProjectsApi.getProjectsWithFilters({
+        status,
+        search,
+        page,
+        size,
+        sort_by,
+        sort_dir,
+      });
+      projects.value = data.data || data;
+      projectPagination.value = {
+        total: data.total || projects.value.length,
+        page: data.page || page,
+        size: data.size || size,
+      };
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось загрузить проекты";
+      handleApiError(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Загрузить KPI проектов
+   */
+  async function loadProjectKpi() {
+    loading.value = true;
+    error.value = null;
+    try {
+      kpi.value = await ProjectsApi.getProjectKpi();
+    } catch (err) {
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -236,15 +316,19 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await ProjectsApi.updateProject(projectId, data);
-      const index = projects.value.findIndex((p) => p.id === projectId);
+      const updated = await ProjectsApi.updateProject(
+        parseInt(projectId),
+        data,
+      );
+      const index = projects.value.findIndex(
+        (p) => p.id === parseInt(projectId),
+      );
       if (index !== -1) {
         projects.value[index] = updated;
       }
       return updated;
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось обновить проект";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -260,11 +344,12 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      await ProjectsApi.deleteProject(projectId);
-      projects.value = projects.value.filter((p) => p.id !== projectId);
+      await ProjectsApi.deleteProject(parseInt(projectId));
+      projects.value = projects.value.filter(
+        (p) => p.id !== parseInt(projectId),
+      );
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось удалить проект";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -281,15 +366,17 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      const newSource = await ProjectsApi.createSource(projectId, data);
+      const newSource = await ProjectsApi.createSource(
+        parseInt(projectId),
+        data,
+      );
       if (!sources.value[projectId]) {
         sources.value[projectId] = [];
       }
       sources.value[projectId].push(newSource);
       return newSource;
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось создать источник";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -307,18 +394,21 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await ProjectsApi.updateSource(projectId, sourceId, data);
+      const updated = await ProjectsApi.updateSource(
+        parseInt(projectId),
+        parseInt(sourceId),
+        data,
+      );
       const sourcesList = sources.value[projectId];
       if (sourcesList) {
-        const index = sourcesList.findIndex((s) => s.id === sourceId);
+        const index = sourcesList.findIndex((s) => s.id === parseInt(sourceId));
         if (index !== -1) {
           sourcesList[index] = updated;
         }
       }
       return updated;
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось обновить источник";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -335,14 +425,15 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      await ProjectsApi.deleteSource(projectId, sourceId);
+      await ProjectsApi.deleteSource(parseInt(projectId), parseInt(sourceId));
       const sourcesList = sources.value[projectId];
       if (sourcesList) {
-        sources.value[projectId] = sourcesList.filter((s) => s.id !== sourceId);
+        sources.value[projectId] = sourcesList.filter(
+          (s) => s.id !== parseInt(sourceId),
+        );
       }
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось удалить источник";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -359,17 +450,17 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      const newTable = await ProjectsApi.createMappingTable(projectId, data);
+      const newTable = await ProjectsApi.createMappingTable(
+        parseInt(projectId),
+        data,
+      );
       if (!mappingTables.value[projectId]) {
         mappingTables.value[projectId] = [];
       }
       mappingTables.value[projectId].push(newTable);
       return newTable;
     } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось создать таблицу маппинга";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -388,23 +479,20 @@ export const useProjectsStore = defineStore("projects", () => {
     error.value = null;
     try {
       const updated = await ProjectsApi.updateMappingTable(
-        projectId,
-        tableId,
+        parseInt(projectId),
+        parseInt(tableId),
         data,
       );
       const tables = mappingTables.value[projectId];
       if (tables) {
-        const index = tables.findIndex((t) => t.id === tableId);
+        const index = tables.findIndex((t) => t.id === parseInt(tableId));
         if (index !== -1) {
           tables[index] = updated;
         }
       }
       return updated;
     } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось обновить таблицу маппинга";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -421,16 +509,18 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      await ProjectsApi.deleteMappingTable(projectId, tableId);
+      await ProjectsApi.deleteMappingTable(
+        parseInt(projectId),
+        parseInt(tableId),
+      );
       const tables = mappingTables.value[projectId];
       if (tables) {
-        mappingTables.value[projectId] = tables.filter((t) => t.id !== tableId);
+        mappingTables.value[projectId] = tables.filter(
+          (t) => t.id !== parseInt(tableId),
+        );
       }
     } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось удалить таблицу маппинга";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -449,19 +539,18 @@ export const useProjectsStore = defineStore("projects", () => {
     error.value = null;
     try {
       const newColumn = await ProjectsApi.createMappingTableColumn(
-        projectId,
-        tableId,
+        parseInt(projectId),
+        parseInt(tableId),
         data,
       );
       const tables = mappingTables.value[projectId];
-      const table = tables?.find((t) => t.id === tableId);
+      const table = tables?.find((t) => t.id === parseInt(tableId));
       if (table) {
         table.columns.push(newColumn);
       }
       return newColumn;
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось создать колонку";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -481,23 +570,24 @@ export const useProjectsStore = defineStore("projects", () => {
     error.value = null;
     try {
       const updated = await ProjectsApi.updateMappingTableColumn(
-        projectId,
-        tableId,
-        columnId,
+        parseInt(projectId),
+        parseInt(tableId),
+        parseInt(columnId),
         data,
       );
       const tables = mappingTables.value[projectId];
-      const table = tables?.find((t) => t.id === tableId);
+      const table = tables?.find((t) => t.id === parseInt(tableId));
       if (table) {
-        const index = table.columns.findIndex((c) => c.id === columnId);
+        const index = table.columns.findIndex(
+          (c) => c.id === parseInt(columnId),
+        );
         if (index !== -1) {
           table.columns[index] = updated;
         }
       }
       return updated;
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось обновить колонку";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -515,15 +605,20 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      await ProjectsApi.deleteMappingTableColumn(projectId, tableId, columnId);
+      await ProjectsApi.deleteMappingTableColumn(
+        parseInt(projectId),
+        parseInt(tableId),
+        parseInt(columnId),
+      );
       const tables = mappingTables.value[projectId];
-      const table = tables?.find((t) => t.id === tableId);
+      const table = tables?.find((t) => t.id === parseInt(tableId));
       if (table) {
-        table.columns = table.columns.filter((c) => c.id !== columnId);
+        table.columns = table.columns.filter(
+          (c) => c.id !== parseInt(columnId),
+        );
       }
     } catch (err) {
-      error.value =
-        err instanceof ApiError ? err.message : "Не удалось удалить колонку";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -540,17 +635,17 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      const newMapping = await ProjectsApi.createRPIMapping(projectId, data);
+      const newMapping = await ProjectsApi.createRPIMapping(
+        parseInt(projectId),
+        data,
+      );
       if (!rpiMappings.value[projectId]) {
         rpiMappings.value[projectId] = [];
       }
       rpiMappings.value[projectId].push(newMapping);
       return newMapping;
     } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось создать РПИ маппинг";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -569,23 +664,20 @@ export const useProjectsStore = defineStore("projects", () => {
     error.value = null;
     try {
       const updated = await ProjectsApi.updateRPIMapping(
-        projectId,
-        rpiId,
+        parseInt(projectId),
+        parseInt(rpiId),
         data,
       );
       const mappings = rpiMappings.value[projectId];
       if (mappings) {
-        const index = mappings.findIndex((m) => m.id === rpiId);
+        const index = mappings.findIndex((m) => m.id === parseInt(rpiId));
         if (index !== -1) {
           mappings[index] = updated;
         }
       }
       return updated;
     } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось обновить РПИ маппинг";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -602,16 +694,15 @@ export const useProjectsStore = defineStore("projects", () => {
     loading.value = true;
     error.value = null;
     try {
-      await ProjectsApi.deleteRPIMapping(projectId, rpiId);
+      await ProjectsApi.deleteRPIMapping(parseInt(projectId), parseInt(rpiId));
       const mappings = rpiMappings.value[projectId];
       if (mappings) {
-        rpiMappings.value[projectId] = mappings.filter((m) => m.id !== rpiId);
+        rpiMappings.value[projectId] = mappings.filter(
+          (m) => m.id !== parseInt(rpiId),
+        );
       }
     } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось удалить РПИ маппинг";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -720,14 +811,14 @@ export const useProjectsStore = defineStore("projects", () => {
   /**
    * Получить опции РПИ маппинга для селекта.
    * @param {number|string} projectId
-   * @returns {{label: string, value: number, measurementType: string}[]}
+   * @returns {{label: string, value: number, measurement_type: string}[]}
    */
   function getRPIMappingOptions(projectId) {
     const mappings = rpiMappings.value[projectId] || [];
     return mappings.map((m) => ({
       label: `${m.number}. ${m.measurement} (${m.object_field})`,
       value: m.id,
-      measurementType: m.measurement_type,
+      measurement_type: m.measurement_type,
     }));
   }
 
@@ -736,41 +827,40 @@ export const useProjectsStore = defineStore("projects", () => {
    * @param {number|string} projectId
    * @param {number|string} tableId
    * @param {number|string} columnId
-   * @param {number|string|null} rpiMappingId - ID РПИ маппинга или null для удаления связи
+   * @param {number|string|null} rpi_mapping_id - ID РПИ маппинга или null для удаления связи
    * @returns {Promise<void>}
    */
   async function updateColumnRPIMapping(
     projectId,
     tableId,
     columnId,
-    rpiMappingId,
+    rpi_mapping_id,
   ) {
     loading.value = true;
     error.value = null;
     try {
       // Обновляем колонку, добавляя/удаляя связь с РПИ
-      // Примечание: rpiMappingId сохраняется в поле rpi_mapping_id колонки
+      // Примечание: rpi_mapping_id сохраняется в поле rpi_mapping_id колонки
       const updated = await ProjectsApi.updateMappingTableColumn(
-        projectId,
-        tableId,
-        columnId,
-        { rpiMappingId },
+        parseInt(projectId),
+        parseInt(tableId),
+        parseInt(columnId),
+        { rpi_mapping_id },
       );
 
       // Обновляем локальное состояние
       const tables = mappingTables.value[projectId];
-      const table = tables?.find((t) => t.id === tableId);
+      const table = tables?.find((t) => t.id === parseInt(tableId));
       if (table) {
-        const index = table.columns.findIndex((c) => c.id === columnId);
+        const index = table.columns.findIndex(
+          (c) => c.id === parseInt(columnId),
+        );
         if (index !== -1) {
           table.columns[index] = updated;
         }
       }
     } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось обновить маппинг колонки";
+      handleApiError(err);
       throw err;
     } finally {
       loading.value = false;
@@ -785,6 +875,8 @@ export const useProjectsStore = defineStore("projects", () => {
     rpiMappings,
     loading,
     error,
+    kpi,
+    projectPagination,
 
     // Computed
     totalSources,
@@ -793,6 +885,7 @@ export const useProjectsStore = defineStore("projects", () => {
 
     // Actions
     loadProjects,
+    loadProjectKpi,
     loadProjectData,
     createProject,
     updateProject,

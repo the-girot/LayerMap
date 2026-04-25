@@ -4,11 +4,14 @@ import { useProjectsStore } from '@/stores/projects';
 
 const store = useProjectsStore();
 
+// KPI values from backend
+const kpi = ref({ total: 0, active: 0, draft: 0, archived: 0 });
+
 // Animated values
-const projectsCount = ref(0);
-const sourcesCount = ref(0);
-const rpiCount = ref(0);
-const lastUpdate = ref('');
+const totalProjects = ref(0);
+const activeProjects = ref(0);
+const draftProjects = ref(0);
+const archivedProjects = ref(0);
 
 // Count-up animation using requestAnimationFrame
 function animateValue(targetRef, targetValue, duration = 700) {
@@ -28,18 +31,24 @@ function animateValue(targetRef, targetValue, duration = 700) {
     requestAnimationFrame(step);
 }
 
-onMounted(() => {
-    animateValue(projectsCount, store.projects.length);
-    animateValue(sourcesCount, store.totalSources);
-    animateValue(rpiCount, store.totalRpi);
-    lastUpdate.value = store.lastUpdateDate;
+onMounted(async () => {
+    try {
+        await store.loadProjectKpi();
+        kpi.value = store.kpi;
+        animateValue(totalProjects, kpi.value.total);
+        animateValue(activeProjects, kpi.value.active);
+        animateValue(draftProjects, kpi.value.draft);
+        animateValue(archivedProjects, kpi.value.archived);
+    } catch (err) {
+        console.error('Failed to load KPI:', err);
+    }
 });
 
 const kpiItems = [
-    { icon: 'pi pi-folder-open', label: 'Проекты', value: projectsCount },
-    { icon: 'pi pi-database', label: 'Таблиц-источников', value: sourcesCount },
-    { icon: 'pi pi-list', label: 'Записей РПИ', value: rpiCount },
-    { icon: 'pi pi-calendar', label: 'Последнее обновление', value: lastUpdate, isDate: true },
+    { icon: 'pi pi-folder-open', label: 'Всего проектов', value: totalProjects },
+    { icon: 'pi pi-check-circle', label: 'Активные', value: activeProjects },
+    { icon: 'pi pi-file', label: 'Черновики', value: draftProjects },
+    { icon: 'pi pi-archive', label: 'Архив', value: archivedProjects },
 ];
 </script>
 

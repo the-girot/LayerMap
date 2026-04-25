@@ -31,8 +31,8 @@ export function useRPIFilters(rows, options = {}) {
       const matchesSearch =
         !q ||
         (row.measurement || "").toLowerCase().includes(q) ||
-        (row.measurementDescription || "").toLowerCase().includes(q) ||
-        (row.objectField || "").toLowerCase().includes(q) ||
+        (row.measurement_description || "").toLowerCase().includes(q) ||
+        (row.object_field || "").toLowerCase().includes(q) ||
         (row.source || "").toLowerCase().includes(q) ||
         (row.comment || "").toLowerCase().includes(q);
 
@@ -42,11 +42,11 @@ export function useRPIFilters(rows, options = {}) {
         !selectedOwnership.value || row.ownership === selectedOwnership.value;
       const matchesMeasurementType =
         !selectedMeasurementType.value ||
-        row.measurementType === selectedMeasurementType.value;
+        row.measurement_type === selectedMeasurementType.value;
       const matchesCalculatedType =
         !selectedCalculatedType.value ||
-        (selectedCalculatedType.value === "calculated" && row.isCalculated) ||
-        (selectedCalculatedType.value === "basic" && !row.isCalculated);
+        (selectedCalculatedType.value === "calculated" && row.is_calculated) ||
+        (selectedCalculatedType.value === "basic" && !row.is_calculated);
 
       return (
         matchesSearch &&
@@ -69,13 +69,14 @@ export function useRPIFilters(rows, options = {}) {
     { label: "Все", value: null, count: rows.value.length },
     {
       label: "Метрики",
-      value: "Метрика",
-      count: rows.value.filter((r) => r.measurementType === "Метрика").length,
+      value: "metric",
+      count: rows.value.filter((r) => r.measurement_type === "Метрика").length,
     },
     {
       label: "Измерения",
-      value: "Измерение",
-      count: rows.value.filter((r) => r.measurementType === "Измерение").length,
+      value: "dimension",
+      count: rows.value.filter((r) => r.measurement_type === "Измерение")
+        .length,
     },
   ]);
 

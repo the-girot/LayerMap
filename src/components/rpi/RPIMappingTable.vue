@@ -6,6 +6,7 @@ import Paginator from 'primevue/paginator';
 import Badge from 'primevue/badge';
 import { getProjectSourceByProjectIdAndName, getColumnTypeBadgeClass, getColumnTypeBadge } from '@/utils/mapping';
 import { getStatusPillClass, getStatusDotClass, getMappingStatusLabel } from '@/utils/status';
+import { MEASUREMENT_TYPE_MAP } from '@/constants/rpi';
 
 
 const activeRow = ref(null);
@@ -142,31 +143,31 @@ function getSourceType(sourceName) {
             </Column>
 
             <!-- Тип измерения -->
-            <Column field="measurementType" header="Тип измерения" style="min-width: 120px">
+            <Column field="measurement_type" header="Тип измерения" style="min-width: 120px">
                 <template #body="{ data }">
-                    <Badge :value="data.measurementType"
-                        :severity="data.measurementType === 'Метрика' ? 'info' : 'success'"
+                    <Badge :value="MEASUREMENT_TYPE_MAP[data.measurement_type] || data.measurement_type"
+                        :severity="data.measurement_type === 'metric' ? 'info' : 'success'"
                         :pt="{ root: 'text-[10px]' }" />
                 </template>
             </Column>
 
             <!-- Тип (базовый/расчетный) -->
-            <Column field="isCalculated" header="Тип" style="min-width: 90px">
+            <Column field="is_calculated" header="Тип" style="min-width: 90px">
                 <template #body="{ data }">
-                    <Badge :value="data.isCalculated ? 'Расчетный' : 'Базовый'"
-                        :severity="data.isCalculated ? 'warning' : 'contrast'" :pt="{ root: 'text-[10px]' }" />
+                    <Badge :value="data.is_calculated ? 'Расчетный' : 'Базовый'"
+                        :severity="data.is_calculated ? 'warning' : 'contrast'" :pt="{ root: 'text-[10px]' }" />
                 </template>
             </Column>
 
             <!-- Связанное поле источника -->
-            <Column field="sourceColumnId" header="Поле источника" style="min-width: 140px">
+            <Column field="source_column_id" header="Поле источника" style="min-width: 140px">
                 <template #body="{ data }">
-                    <div v-if="data.sourceColumnId" class="flex items-center gap-1.5">
+                    <div v-if="data.source_column_id" class="flex items-center gap-1.5">
                         <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-[9px] font-bold"
                             :class="getColumnTypeBadgeClass(data, projectId, sources, mappingTables)">
                             {{ getColumnTypeBadge(data, projectId, sources, mappingTables) }}
                         </span>
-                        <span class="text-xs font-mono text-app-text-secondary">{{ data.objectField }}</span>
+                        <span class="text-xs font-mono text-app-text-secondary">{{ data.object_field }}</span>
                     </div>
                     <span v-else class="text-xs text-content-faint">—</span>
                 </template>
@@ -175,7 +176,7 @@ function getSourceType(sourceName) {
             <!-- Формула -->
             <Column field="formula" header="Формула" style="min-width: 200px">
                 <template #body="{ data }">
-                    <span v-if="data.isCalculated && data.formula" class="text-xs font-mono text-orange-600">{{
+                    <span v-if="data.is_calculated && data.formula" class="text-xs font-mono text-orange-600">{{
                         data.formula }}</span>
                     <span v-else class="text-xs text-content-faint">—</span>
                 </template>
@@ -189,38 +190,38 @@ function getSourceType(sourceName) {
             </Column>
 
             <!-- Описание измерения -->
-            <Column field="measurementDescription" header="Описание" style="min-width: 220px">
+            <Column field="measurement_description" header="Описание" style="min-width: 220px">
                 <template #body="{ data }">
-                    <span class="text-xs text-app-text-secondary">{{ data.measurementDescription || "—" }}</span>
+                    <span class="text-xs text-app-text-secondary">{{ data.measurement_description || "—" }}</span>
                 </template>
             </Column>
 
             <!-- Источник (отчёт / справочник) -->
-            <Column field="sourceReport" header="Отчёт / Справочник" style="min-width: 160px">
+            <Column field="source_report" header="Отчёт / Справочник" style="min-width: 160px">
                 <template #body="{ data }">
-                    <span class="text-xs text-app-text-secondary">{{ data.sourceReport || "—" }}</span>
+                    <span class="text-xs text-app-text-secondary">{{ data.source_report || "—" }}</span>
                 </template>
             </Column>
 
             <!-- Объект (поле/столбец) -->
-            <Column field="objectField" header="Объект (поле)" style="min-width: 160px">
+            <Column field="object_field" header="Объект (поле)" style="min-width: 160px">
                 <template #body="{ data }">
-                    <span class="text-xs font-mono font-bold text-primary">{{ data.objectField }}</span>
+                    <span class="text-xs font-mono font-bold text-primary">{{ data.object_field }}</span>
                 </template>
             </Column>
 
             <!-- Дата внесения -->
-            <Column field="dateAdded" header="Дата внесения" style="min-width: 110px">
+            <Column field="date_added" header="Дата внесения" style="min-width: 110px">
                 <template #body="{ data }">
-                    <span class="text-xs text-app-text-muted">{{ data.dateAdded || "—" }}</span>
+                    <span class="text-xs text-app-text-muted">{{ data.date_added || "—" }}</span>
                 </template>
             </Column>
 
             <!-- Дата выведения -->
-            <Column field="dateRemoved" header="Дата выведения" style="min-width: 110px">
+            <Column field="date_removed" header="Дата выведения" style="min-width: 110px">
                 <template #body="{ data }">
-                    <span v-if="data.dateRemoved" class="text-xs text-app-error">{{ data.dateRemoved
-                        }}</span>
+                    <span v-if="data.date_removed" class="text-xs text-app-error">{{ data.date_removed
+                    }}</span>
                     <span v-else class="text-xs text-content-faint">—</span>
                 </template>
             </Column>
@@ -233,12 +234,12 @@ function getSourceType(sourceName) {
             </Column>
 
             <!-- Файл для проверки -->
-            <Column field="verificationFile" header="Файл проверки" style="min-width: 140px">
+            <Column field="verification_file" header="Файл проверки" style="min-width: 140px">
                 <template #body="{ data }">
-                    <span v-if="data.verificationFile"
+                    <span v-if="data.verification_file"
                         class="inline-flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
                         <i class="pi pi-file text-[9px]" />
-                        {{ data.verificationFile }}
+                        {{ data.verification_file }}
                     </span>
                     <span v-else class="text-xs text-content-faint">—</span>
                 </template>

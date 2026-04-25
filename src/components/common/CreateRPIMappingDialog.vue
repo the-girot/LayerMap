@@ -41,7 +41,7 @@ const form = ref({
     ownership: "",
     status: "draft",
     block: "",
-    measurement_type: "Метрика",
+    measurement_type: "metric",
     is_calculated: false,
     formula: null,
     measurement: "",

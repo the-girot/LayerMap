@@ -2,7 +2,7 @@
 /**
  * ProjectsListView — список проектов в виде карточек.
  */
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectsStore } from "@/stores/projects";
 import { formatDate } from "@/utils/format";
@@ -10,9 +10,11 @@ import { getProjectStatusSeverity, getProjectStatusLabel } from "@/utils/status"
 import Card from "primevue/card";
 import Badge from "primevue/badge";
 import Button from "primevue/button";
+import CreateProjectDialog from "@/components/common/CreateProjectDialog.vue";
 
 const router = useRouter();
 const projectsStore = useProjectsStore();
+const showCreateProjectDialog = ref(false);
 
 const projects = computed(() => projectsStore.projects);
 
@@ -34,6 +36,11 @@ function getPluralForm(n) {
     if (n < 5) return "проекта";
     return "проектов";
 }
+
+async function handleCreateProject(data) {
+    await projectsStore.createProject(data);
+    showCreateProjectDialog.value = false;
+}
 </script>
 
 <template>
@@ -50,7 +57,8 @@ function getPluralForm(n) {
                 </div>
             </div>
             <div>
-                <Button label="Новый проект" icon="pi pi-plus" size="small" :pt="{ root: 'rounded-lg min-h-[30px]' }" />
+                <Button label="Новый проект" icon="pi pi-plus" size="small" :pt="{ root: 'rounded-lg min-h-[30px]' }"
+                    @click="showCreateProjectDialog = true" />
             </div>
         </header>
 
@@ -124,7 +132,11 @@ function getPluralForm(n) {
             <p class="mt-2 text-sm text-app-text-muted">
                 Создайте первый проект для начала маппинга РПИ
             </p>
-            <Button label="Создать проект" icon="pi pi-plus" class="mt-4 !rounded-lg" :pt="{ root: 'min-h-[44px]' }" />
+            <Button label="Создать проект" icon="pi pi-plus" class="mt-4 !rounded-lg" :pt="{ root: 'min-h-[44px]' }"
+                @click="showCreateProjectDialog = true" />
         </div>
+
+        <!-- Create Project Dialog -->
+        <CreateProjectDialog v-model="showCreateProjectDialog" @create="handleCreateProject" />
     </div>
 </template>

@@ -16,7 +16,7 @@
 
 <script setup>
 import { useApiStatus } from "@/composables/useApiStatus";
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 const { status, loading, available, error, refresh } = useApiStatus();
 
 const statusClass = computed(() => ({
@@ -36,7 +36,13 @@ const indicatorClass = computed(() => ({
 
 const statusText = computed(() => {
     if (loading.value) return "Проверка подключения...";
-    if (available.value) return "API подключен";
+    if (available.value) {
+        if (status.value.health) {
+            const redisStatus = status.value.health.redis ? "✓" : "✗";
+            return `API подключен (${redisStatus} Redis)`;
+        }
+        return "API подключен";
+    }
     if (error.value) return `Ошибка: ${error.value}`;
     return "Не подключен";
 });

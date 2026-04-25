@@ -6,9 +6,16 @@ import { ref, computed } from "vue";
 import { apiClient } from "@/api/client";
 
 /**
+ * @typedef {Object} HealthStatus
+ * @property {string} status - "healthy" или "unhealthy"
+ * @property {boolean} redis - состояние Redis
+ */
+
+/**
  * @typedef {Object} ApiStatus
  * @property {boolean} loading - Идёт проверка подключения
  * @property {boolean} available - API доступен
+ * @property {HealthStatus|null} health - статус здоровья API или null
  * @property {string|null} error - Ошибка подключения или null
  */
 
@@ -18,31 +25,48 @@ import { apiClient } from "@/api/client";
 const status = ref({
   loading: true,
   available: false,
+  health: null,
   error: null,
 });
 
 /**
- * Проверить доступность API
+ * Проверить доступность API через /health endpoint
  * @returns {Promise<boolean>}
  */
 async function checkApiAvailability() {
-  status.value = { loading: true, available: false, error: null };
+  status.value = { loading: true, available: false, health: null, error: null };
 
   try {
-    // Пытаемся сделать простой запрос к бэкенду
-    await apiClient.get("/projects", {
+    const health = await apiClient.get("/health", {
       throwOnError: false,
-      json: false,
+      json: true,
     });
 
-    // Если запрос прошёл (даже с ошибкой 4xx/5xx), значит бэкенд доступен
-    status.value = { loading: false, available: true, error: null };
-    return true;
+    // Ожидаем { status: "healthy", redis: true }
+    if (health && health.status === "healthy") {
+      status.value = {
+        loading: false,
+        available: true,
+        health: health,
+        error: null,
+      };
+      return true;
+    }
+
+    // Если статус не "healthy", считаем API недоступным
+    status.value = {
+      loading: false,
+      available: false,
+      health: health,
+      error: "API возвращает unhealthy статус",
+    };
+    return false;
   } catch (error) {
     // CORS ошибка или сетевая ошибка
     status.value = {
       loading: false,
       available: false,
+      health: null,
       error:
         error instanceof Error ? error.message : "Не удалось проверить API",
     };

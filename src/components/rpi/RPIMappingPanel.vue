@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
+import { MEASUREMENT_TYPE_MAP } from '@/constants/rpi';
 
 const props = defineProps({
     panelOpen: {
@@ -67,13 +68,23 @@ function handleFieldChange(option) {
 }
 
 const ownershipOptions = ['Аналитика', 'Маркетинг', 'Гео', 'Техническое'];
-const measurementTypeOptions = ['dimension', 'metric'];
+
+// Опции для Select с русскими метками и английскими значениями
+const measurementTypeOptions = [
+    { label: 'Измерение', value: 'dimension' },
+    { label: 'Метрика', value: 'metric' }
+];
 
 const statusOptions = [
     { value: 'approved', label: 'Утв.' },
     { value: 'in_review', label: 'Проверка' },
     { value: 'draft', label: 'Черновик' },
 ];
+
+// Вычисляемое свойство для отображения русского значения
+const measurementTypeLabel = computed(() => {
+    return MEASUREMENT_TYPE_MAP[form.measurement_type] || form.measurement_type;
+});
 </script>
 
 <template>
@@ -92,9 +103,9 @@ const statusOptions = [
                             panelMode === 'add' ? 'bg-app-primary-light text-primary' : 'bg-app-surface-hover text-app-text-muted',
                         ]">{{ panelMode }}</span>
                     </div>
-                    <p v-if="panelMode === 'edit' && form?.objectField"
+                    <p v-if="panelMode === 'edit' && form?.object_field"
                         class="mt-0.5 truncate font-mono text-[10px] text-app-text-muted">
-                        {{ form.objectField }}
+                        {{ form.object_field }}
                     </p>
                 </div>
                 <button @click="handleClose"
@@ -191,8 +202,8 @@ const statusOptions = [
                         <label class="text-[11px] font-semibold uppercase tracking-wide text-app-text-muted">
                             Тип измерения
                         </label>
-                        <Select v-model="form.measurementType" :options="measurementTypeOptions" placeholder="Выберите"
-                            :pt="{ root: 'w-full rounded-lg text-xs' }" />
+                        <Select v-model="form.measurement_type" :options="measurementTypeOptions" optionLabel="label"
+                            optionValue="value" placeholder="Выберите" :pt="{ root: 'w-full rounded-lg text-xs' }" />
                     </div>
 
                     <!-- Базовый / Расчетный (readonly при связанной колонке) -->
@@ -201,20 +212,20 @@ const statusOptions = [
                             Тип показателя / измерения
                         </label>
                         <div class="flex gap-2">
-                            <button @click="!selectedColumn && (form.isCalculated = false)" :disabled="!!selectedColumn"
-                                :class="[
+                            <button @click="!selectedColumn && (form.is_calculated = false)"
+                                :disabled="!!selectedColumn" :class="[
                                     'flex-1 rounded-lg border py-2.5 text-[10px] font-semibold transition-all min-h-[44px]',
-                                    !form.isCalculated
+                                    !form.is_calculated
                                         ? 'border-purple-300 bg-purple-50 text-purple-700'
                                         : 'border-app-border text-app-text-muted hover:border-app-border-hover hover:text-app-text-secondary',
                                     selectedColumn ? 'opacity-60 cursor-not-allowed' : '',
                                 ]">
                                 Базовый
                             </button>
-                            <button @click="!selectedColumn && (form.isCalculated = true)" :disabled="!!selectedColumn"
+                            <button @click="!selectedColumn && (form.is_calculated = true)" :disabled="!!selectedColumn"
                                 :class="[
                                     'flex-1 rounded-lg border py-2.5 text-[10px] font-semibold transition-all min-h-[44px]',
-                                    form.isCalculated
+                                    form.is_calculated
                                         ? 'border-orange-300 bg-orange-50 text-orange-700'
                                         : 'border-app-border text-app-text-muted hover:border-app-border-hover hover:text-app-text-secondary',
                                     selectedColumn ? 'opacity-60 cursor-not-allowed' : '',
@@ -229,14 +240,14 @@ const statusOptions = [
                     </div>
 
                     <!-- Formula (только для расчетных) -->
-                    <div v-if="form.isCalculated" class="space-y-1.5">
+                    <div v-if="form.is_calculated" class="space-y-1.5">
                         <label
                             class="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-app-text-muted">
                             Формула <span class="text-app-error text-[10px] font-normal">req.</span>
                         </label>
                         <InputText v-model="form.formula" placeholder="[Показатель 1] + [Показатель 2] / 100"
                             :pt="{ root: 'w-full rounded-lg font-mono text-xs' }"
-                            :class="{ 'border-app-error': formTouched && form.isCalculated && !form.formula }" />
+                            :class="{ 'border-app-error': formTouched && form.is_calculated && !form.formula }" />
                         <p class="text-[10px] text-app-text-muted">
                             Используйте [Имя поля] для ссылки на другие показатели
                         </p>
@@ -264,7 +275,7 @@ const statusOptions = [
                         <label class="text-[11px] font-semibold uppercase tracking-wide text-app-text-muted">
                             Описание
                         </label>
-                        <InputText v-model="form.measurementDescription" placeholder="Что представляет это измерение?"
+                        <InputText v-model="form.measurement_description" placeholder="Что представляет это измерение?"
                             :pt="{ root: 'w-full rounded-lg text-xs' }" />
                     </div>
 
@@ -273,7 +284,7 @@ const statusOptions = [
                         <label class="text-[11px] font-semibold uppercase tracking-wide text-app-text-muted">
                             Отчёт / Справочник
                         </label>
-                        <InputText v-model="form.sourceReport" placeholder="Отчёт по визитам"
+                        <InputText v-model="form.source_report" placeholder="Отчёт по визитам"
                             :pt="{ root: 'w-full rounded-lg text-xs' }" />
                     </div>
 
@@ -284,27 +295,27 @@ const statusOptions = [
                             Поле источника <span class="text-app-error text-[10px] font-normal">req.</span>
                         </label>
                         <!-- Select from source columns (if source is selected) -->
-                        <Select v-if="form.source && columnOptions.length > 0" v-model="form.objectField"
+                        <Select v-if="form.source && columnOptions.length > 0" v-model="form.object_field"
                             :options="columnOptions" optionLabel="label" optionValue="value" placeholder="Выберите поле"
                             :pt="{ root: 'w-full rounded-lg text-xs' }"
-                            :class="{ 'border-app-error': formTouched && !form.objectField }"
+                            :class="{ 'border-app-error': formTouched && !form.object_field }"
                             @change="(e) => handleFieldChange(e.value)">
                             <template #option="slotProps">
                                 <div class="flex items-center gap-2 py-1">
                                     <!-- Type badge -->
                                     <span
                                         class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-[9px] font-bold"
-                                        :class="slotProps.option.isCalculated
+                                        :class="slotProps.option.is_calculated
                                             ? 'bg-orange-100 text-orange-700'
                                             : slotProps.option.type === 'metric'
                                                 ? 'bg-indigo-100 text-indigo-700'
                                                 : 'bg-emerald-100 text-emerald-700'">
-                                        {{ slotProps.option.isCalculated ? 'P' : slotProps.option.type ===
+                                        {{ slotProps.option.is_calculated ? 'P' : slotProps.option.type ===
                                             'metric' ? 'M' : 'D' }}
                                     </span>
                                     <div class="flex-1">
                                         <span class="text-xs font-mono font-medium">{{ slotProps.option.value
-                                        }}</span>
+                                            }}</span>
                                         <span class="ml-1.5 text-[10px] text-app-text-muted">{{
                                             slotProps.option.dataType }}</span>
                                     </div>
@@ -317,9 +328,9 @@ const statusOptions = [
                             <template #value="slotProps">
                                 <div v-if="slotProps.value" class="flex items-center gap-2">
                                     <span class="text-xs font-mono font-bold text-primary">{{ slotProps.value
-                                    }}</span>
+                                        }}</span>
                                     <span v-if="selectedColumn" class="text-[10px] text-app-text-muted">
-                                        ({{ selectedColumn.isCalculated ? 'расчетный' : 'базовый' }})
+                                        ({{ selectedColumn.is_calculated ? 'расчетный' : 'базовый' }})
                                     </span>
                                 </div>
                                 <span v-else class="text-app-text-muted">
@@ -328,9 +339,9 @@ const statusOptions = [
                             </template>
                         </Select>
                         <!-- Manual input when no source or no columns -->
-                        <InputText v-else v-model="form.objectField" placeholder="Введите название поля вручную"
+                        <InputText v-else v-model="form.object_field" placeholder="Введите название поля вручную"
                             :pt="{ root: 'w-full rounded-lg text-xs' }"
-                            :class="{ 'border-app-error': formTouched && !form.objectField }" />
+                            :class="{ 'border-app-error': formTouched && !form.object_field }" />
                         <p v-if="!form.source" class="text-[10px] text-app-text-muted">
                             <i class="pi pi-info-circle text-[8px] mr-1" />
                             Поле вводится вручную (без привязки к источнику)
@@ -365,7 +376,7 @@ const statusOptions = [
                         <label class="text-[11px] font-semibold uppercase tracking-wide text-app-text-muted">
                             Файл для проверки
                         </label>
-                        <InputText v-model="form.verificationFile" placeholder="mapping.xlsx"
+                        <InputText v-model="form.verification_file" placeholder="mapping.xlsx"
                             :pt="{ root: 'w-full rounded-lg font-mono text-xs' }" />
                     </div>
                 </div>

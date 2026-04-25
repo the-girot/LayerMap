@@ -1,17 +1,24 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useProjectsStore } from '@/stores/projects';
 import KpiCards from '@/components/home/KpiCards.vue';
 import ProjectsTable from '@/components/home/ProjectsTable.vue';
 import QuickActions from '@/components/home/QuickActions.vue';
 import Button from 'primevue/button';
+import CreateProjectDialog from '@/components/common/CreateProjectDialog.vue';
 
 const projectsStore = useProjectsStore();
+const showCreateProjectDialog = ref(false);
 
-// Загрузка проектов при монтировании компонента
+// Загрузка последних проектов при монтировании компонента
 onMounted(async () => {
-    await projectsStore.loadProjects();
+    await projectsStore.loadProjects({ page: 1, size: 10 });
 });
+
+async function handleCreateProject(data) {
+    await projectsStore.createProject(data);
+    showCreateProjectDialog.value = false;
+}
 </script>
 
 <template>
@@ -27,7 +34,7 @@ onMounted(async () => {
             <Button label="Создать проект" icon="pi pi-plus" :pt="{
                 root: 'bg-primary hover:bg-primary-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors min-h-[44px]',
                 icon: 'mr-2',
-            }" />
+            }" @click="showCreateProjectDialog = true" />
         </div>
 
         <!-- KPI Cards -->
@@ -44,5 +51,8 @@ onMounted(async () => {
         <section>
             <QuickActions />
         </section>
+
+        <!-- Create Project Dialog -->
+        <CreateProjectDialog v-model="showCreateProjectDialog" @create="handleCreateProject" />
     </div>
 </template>

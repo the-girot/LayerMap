@@ -84,7 +84,7 @@ const columnOptions = computed(() => {
             dataType: col.dataType,
             description: col.description,
             type: col.type,
-            isCalculated: col.isCalculated,
+            is_calculated: col.isCalculated,
             formula: col.formula,
         };
     });
@@ -97,8 +97,8 @@ const columnOptions = computed(() => {
 
 /** Выбранная колонка по sourceColumnId */
 const selectedColumn = computed(() => {
-    if (!form.sourceColumnId) return null;
-    return availableColumns.value.find((c) => c.id === form.sourceColumnId) || null;
+    if (!form.source_column_id) return null;
+    return availableColumns.value.find((c) => c.id === form.source_column_id) || null;
 });
 
 /** Обработчик выбора поля - автоматически заполняет связанные поля */
@@ -177,12 +177,12 @@ const panelProps = computed(() => ({
                     form.source = value;
                     if (!value) {
                         // При очистке источника сбрасываем привязку к колонке,
-                        // но сохраняем objectField если он был введен вручную
-                        form.sourceColumnId = null;
+                        // но сохраняем object_field если он был введен вручную
+                        form.source_column_id = null;
                     } else {
                         // При выборе источника сбрасываем поле для выбора из новых опций
-                        form.objectField = null;
-                        form.sourceColumnId = null;
+                        form.object_field = null;
+                        form.source_column_id = null;
                     }
                 }" @field-change="onObjectFieldChange" />
         </div>

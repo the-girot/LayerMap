@@ -20,8 +20,16 @@ export const RPI_OWNERSHIP_OPTIONS = [
   { label: "Техническое", value: "Техническое" },
 ];
 
-/** Опции типов измерений */
+/** Опции типов измерений для UI (русские значения) */
 export const RPI_MEASUREMENT_TYPES = ["Измерение", "Метрика"];
+
+/** Маппинг между русскими значениями (UI) и английскими кодами (API) */
+export const MEASUREMENT_TYPE_MAP = {
+  Измерение: "dimension",
+  Метрика: "metric",
+  dimension: "Измерение",
+  metric: "Метрика",
+};
 
 /** Опции принадлежности для формы */
 export const RPI_OWNERSHIP_VALUES = [
@@ -45,16 +53,16 @@ export const createEmptyRPIForm = () => ({
   status: "draft",
   source: "",
   block: "",
-  measurementType: "Измерение",
-  isCalculated: false,
+  measurement_type: "dimension",
+  is_calculated: false,
   formula: "",
   measurement: "",
-  measurementDescription: "",
-  sourceReport: "",
-  objectField: "",
-  sourceColumnId: null, // Жесткая связь с колонкой источника
-  dateAdded: "",
-  dateRemoved: null,
+  measurement_description: "",
+  source_report: "",
+  object_field: "",
+  source_column_id: null, // Жесткая связь с колонкой источника
+  date_added: "",
+  date_removed: null,
   comment: "",
-  verificationFile: null,
+  verification_file: null,
 });

@@ -7,7 +7,7 @@
  * - sourceColumnId хранит ID колонки для обратной связи
  */
 import { reactive, ref } from "vue";
-import { createEmptyRPIForm } from "@/constants/rpi";
+import { createEmptyRPIForm, MEASUREMENT_TYPE_MAP } from "@/constants/rpi";
 
 /**
  * @param {import('vue').Ref<Array>} rows - Массив РПИ-записей
@@ -24,20 +24,20 @@ export function useRPIMappingForm(rows, store, projectId) {
 
   /**
    * Заполнить поля формы из выбранной колонки источника.
-   * Автоматически устанавливает measurementType, isCalculated, formula.
+   * Автоматически устанавливает measurement_type, is_calculated, formula.
    * @param {object} column - Колонка из MappingTable.columns
    */
   function fillFormFromColumn(column) {
     if (!column) return;
-    // measurementType: 'metric' → 'Метрика', 'dimension' → 'Измерение'
-    form.measurementType = column.type === "metric" ? "Метрика" : "Измерение";
-    form.isCalculated = column.isCalculated || false;
-    form.formula = column.isCalculated ? column.formula || "" : "";
-    form.objectField = column.name;
-    form.sourceColumnId = column.id;
+    // measurement_type: 'metric' → 'metric', 'dimension' → 'dimension' (API format)
+    form.measurement_type = column.type === "metric" ? "metric" : "dimension";
+    form.is_calculated = column.is_calculated || false;
+    form.formula = column.is_calculated ? column.formula || "" : "";
+    form.object_field = column.name;
+    form.source_column_id = column.id;
     // Если есть описание в колонке - используем его
-    if (column.description && !form.measurementDescription) {
-      form.measurementDescription = column.description;
+    if (column.description && !form.measurement_description) {
+      form.measurement_description = column.description;
     }
   }
 
@@ -69,14 +69,14 @@ export function useRPIMappingForm(rows, store, projectId) {
   /** Сохранить запись с валидацией связи */
   function saveRule() {
     formTouched.value = true;
-    if (!form.measurement || !form.objectField) return;
+    if (!form.measurement || !form.object_field) return;
 
-    // Валидация: если есть sourceColumnId, проверяем целостность
-    if (form.sourceColumnId) {
+    // Валидация: если есть source_column_id, проверяем целостность
+    if (form.source_column_id) {
       const validation = store.validateRPIMappingLink(projectId.value, {
-        sourceColumnId: form.sourceColumnId,
-        measurementType: form.measurementType,
-        isCalculated: form.isCalculated,
+        source_column_id: form.source_column_id,
+        measurement_type: form.measurement_type,
+        is_calculated: form.is_calculated,
       });
       if (!validation.valid) {
         console.warn(`[RPIMapping] Validation warning: ${validation.error}`);
@@ -90,16 +90,16 @@ export function useRPIMappingForm(rows, store, projectId) {
         status: form.status || "draft",
         source: form.source || null, // Разрешаем null для источника
         block: form.block || "",
-        measurementType: form.measurementType || "Измерение",
-        isCalculated: form.isCalculated || false,
-        formula: form.isCalculated ? form.formula || "" : "",
+        measurement_type: form.measurement_type || "dimension",
+        is_calculated: form.is_calculated || false,
+        formula: form.is_calculated ? form.formula || "" : "",
         measurement: form.measurement,
-        measurementDescription: form.measurementDescription || "",
-        sourceReport: form.sourceReport || "",
-        objectField: form.objectField,
-        sourceColumnId: form.sourceColumnId || null,
+        measurement_description: form.measurement_description || "",
+        source_report: form.source_report || "",
+        object_field: form.object_field,
+        source_column_id: form.source_column_id || null,
         comment: form.comment || "",
-        verificationFile: form.verificationFile || null,
+        verification_file: form.verification_file || null,
       });
     } else if (activeRow.value) {
       store.updateRPIMapping(projectId.value, activeRow.value.id, {
@@ -107,16 +107,16 @@ export function useRPIMappingForm(rows, store, projectId) {
         status: form.status,
         source: form.source || null, // Разрешаем null для источника
         block: form.block,
-        measurementType: form.measurementType,
-        isCalculated: form.isCalculated,
-        formula: form.isCalculated ? form.formula : "",
+        measurement_type: form.measurement_type,
+        is_calculated: form.is_calculated,
+        formula: form.is_calculated ? form.formula : "",
         measurement: form.measurement,
-        measurementDescription: form.measurementDescription,
-        sourceReport: form.sourceReport,
-        objectField: form.objectField,
-        sourceColumnId: form.sourceColumnId || null,
+        measurement_description: form.measurement_description,
+        source_report: form.source_report,
+        object_field: form.object_field,
+        source_column_id: form.source_column_id || null,
         comment: form.comment,
-        verificationFile: form.verificationFile,
+        verification_file: form.verification_file,
       });
     }
     closePanel();

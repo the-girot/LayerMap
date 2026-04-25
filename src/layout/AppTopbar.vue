@@ -7,6 +7,11 @@
     </template>
     <template #end>
       <div class="flex items-center gap-10">
+        <p v-if="authStore.user?.full_name" class="text-lg font-medium">
+          {{ authStore.user.full_name }}
+        </p>
+        <Button v-if="authStore.isAuthenticated" @click="handleLogout" label="Выйти" icon="pi pi-sign-out"
+          severity="secondary" class="mr-2" />
         <p class="text-2xl self-center">{{ currentDate }}</p>
       </div>
     </template>
@@ -15,14 +20,21 @@
 
 <script setup>
 /**
- * AppTopbar — верхняя панель навигации с меню и текущим временем.
+ * AppTopbar — верхняя панель навигации с меню, именем пользователя и кнопкой выхода.
  */
 import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import { useToast } from "primevue/usetoast";
 
 defineProps({
   isVisible: Boolean,
 });
 defineEmits(["toggleCard"]);
+
+const router = useRouter();
+const authStore = useAuthStore();
+const toast = useToast();
 
 /**
  * Элементы меню навигации.
@@ -51,6 +63,20 @@ function formatDateTime(date) {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+/**
+ * Обработать выход из системы
+ */
+function handleLogout() {
+  authStore.logout();
+  toast.add({
+    severity: "info",
+    summary: "Выход",
+    detail: "Вы успешно вышли из системы",
+    life: 3000,
+  });
+  router.push({ name: "Login" });
 }
 
 let intervalId = null;
