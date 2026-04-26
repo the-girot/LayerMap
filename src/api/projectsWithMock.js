@@ -77,6 +77,130 @@ export async function getProjects() {
 }
 
 /**
+ * Получить KPI проектов
+ * @returns {Promise<{total: number, active: number, draft: number, archived: number}>}
+ */
+export async function getProjectKpi() {
+  const available = await isBackendAvailable();
+  if (!available) {
+    console.warn("Backend unavailable, using mock KPI data");
+    return { total: mockProjects.length, active: 0, draft: 0, archived: 0 };
+  }
+  try {
+    const data = await apiClient.get("/projects/kpi");
+    return convertKeysToCamel(data);
+  } catch (error) {
+    console.warn("Backend request failed, using mock KPI data:", error);
+    return { total: mockProjects.length, active: 0, draft: 0, archived: 0 };
+  }
+}
+
+/**
+ * Получить последние проекты
+ * @param {number} [limit=10]
+ * @returns {Promise<Project[]>}
+ */
+export async function getRecentProjects(limit = 10) {
+  const available = await isBackendAvailable();
+  if (!available) {
+    console.warn("Backend unavailable, using mock recent projects");
+    return mockProjects.slice(0, limit);
+  }
+  try {
+    const data = await apiClient.get(`/projects/recent?limit=${limit}`);
+    return convertKeysToCamel(data);
+  } catch (error) {
+    console.warn("Backend request failed, using mock recent projects:", error);
+    return mockProjects.slice(0, limit);
+  }
+}
+
+/**
+ * Получить проекты с фильтрами и пагинацией
+ * @param {{status?: string, search?: string, page: number, size: number, sort_by?: string, sort_dir?: 'asc'|'desc'}} params
+ * @returns {Promise<{data: Project[], total: number, page: number, size: number}>}
+ */
+export async function getProjectsWithFilters({
+  status,
+  search,
+  page = 1,
+  size = 10,
+  sort_by,
+  sort_dir = "asc",
+}) {
+  const available = await isBackendAvailable();
+  if (!available) {
+    console.warn("Backend unavailable, using mock filtered projects");
+    const filtered = mockProjects;
+    const total = filtered.length;
+    const start = (page - 1) * size;
+    const end = start + size;
+    return {
+      data: filtered.slice(start, end),
+      total,
+      page,
+      size,
+    };
+  }
+  try {
+    const params = new URLSearchParams();
+    if (status) params.append("status", status);
+    if (search) params.append("search", search);
+    params.append("page", String(page));
+    params.append("size", String(size));
+    if (sort_by) params.append("sort_by", sort_by);
+    if (sort_dir) params.append("sort_dir", sort_dir);
+
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `/projects?${queryString}`
+      : "/projects";
+    const data = await apiClient.get(endpoint);
+    return convertKeysToCamel(data);
+  } catch (error) {
+    console.warn("Backend request failed, using mock filtered projects:", error);
+    const filtered = mockProjects;
+    const total = filtered.length;
+    const start = (page - 1) * size;
+    const end = start + size;
+    return {
+      data: filtered.slice(start, end),
+      total,
+      page,
+      size,
+    };
+  }
+}
+
+/**
+ * Получить таблицы маппинга для источника проекта
+ * @param {number|string} projectId
+ * @param {number|string} sourceId
+ * @returns {Promise<MappingTable[]>}
+ */
+export async function getSourceMappingTables(projectId, sourceId) {
+  const available = await isBackendAvailable();
+  if (!available) {
+    console.warn("Backend unavailable, using mock source mapping tables");
+    const tables = mockMappingTables[Number(projectId)] || [];
+    return tables.filter((t) => t.sourceId === Number(sourceId));
+  }
+  try {
+    const data = await apiClient.get(
+      `/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}/mapping-tables`
+    );
+    return convertKeysToCamel(data);
+  } catch (error) {
+    console.warn(
+      "Backend request failed, using mock source mapping tables:",
+      error
+    );
+    const tables = mockMappingTables[Number(projectId)] || [];
+    return tables.filter((t) => t.sourceId === Number(sourceId));
+  }
+}
+
+/**
  * Получить проект по ID
  * @param {number|string} projectId
  * @returns {Promise<Project>}
@@ -91,7 +215,7 @@ export async function getProjectById(projectId) {
       }
       return project;
     }
-    const data = await apiClient.get(`/projects/${projectId}`);
+    const data = await apiClient.get(`/projects/${parseInt(projectId)}`);
     return convertKeysToCamel(data);
   } catch (error) {
     console.warn("Backend request failed, using mock data:", error);
@@ -122,7 +246,7 @@ export async function createProject(data) {
  */
 export async function updateProject(projectId, data) {
   const snakeData = convertKeysToSnake(data);
-  const result = await apiClient.patch(`/projects/${projectId}`, snakeData);
+  const result = await apiClient.patch(`/projects/${parseInt(projectId)}`, snakeData);
   return convertKeysToCamel(result);
 }
 
@@ -132,7 +256,7 @@ export async function updateProject(projectId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteProject(projectId) {
-  return apiClient.delete(`/projects/${projectId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -150,7 +274,7 @@ export async function getSources(projectId) {
     if (!available) {
       return mockSources[Number(projectId)] || [];
     }
-    const data = await apiClient.get(`/projects/${projectId}/sources`);
+    const data = await apiClient.get(`/projects/${parseInt(projectId)}/sources`);
     return convertKeysToCamel(data);
   } catch (error) {
     console.warn("Backend request failed, using mock data:", error);
@@ -176,7 +300,7 @@ export async function getSourceById(projectId, sourceId) {
       return source;
     }
     const data = await apiClient.get(
-      `/projects/${projectId}/sources/${sourceId}`,
+      `/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`,
     );
     return convertKeysToCamel(data);
   } catch (error) {
@@ -199,7 +323,7 @@ export async function getSourceById(projectId, sourceId) {
 export async function createSource(projectId, data) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.post(
-    `/projects/${projectId}/sources`,
+    `/projects/${parseInt(projectId)}/sources`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -215,7 +339,7 @@ export async function createSource(projectId, data) {
 export async function updateSource(projectId, sourceId, data) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.patch(
-    `/projects/${projectId}/sources/${sourceId}`,
+    `/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -228,7 +352,7 @@ export async function updateSource(projectId, sourceId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteSource(projectId, sourceId) {
-  return apiClient.delete(`/projects/${projectId}/sources/${sourceId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -246,7 +370,7 @@ export async function getMappingTables(projectId) {
     if (!available) {
       return mockMappingTables[Number(projectId)] || [];
     }
-    const data = await apiClient.get(`/projects/${projectId}/mapping-tables`);
+    const data = await apiClient.get(`/projects/${parseInt(projectId)}/mapping-tables`);
     return convertKeysToCamel(data);
   } catch (error) {
     console.warn("Backend request failed, using mock data:", error);
@@ -272,7 +396,7 @@ export async function getMappingTableById(projectId, tableId) {
       return table;
     }
     const data = await apiClient.get(
-      `/projects/${projectId}/mapping-tables/${tableId}`,
+      `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`,
     );
     return convertKeysToCamel(data);
   } catch (error) {
@@ -295,7 +419,7 @@ export async function getMappingTableById(projectId, tableId) {
 export async function createMappingTable(projectId, data) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.post(
-    `/projects/${projectId}/mapping-tables`,
+    `/projects/${parseInt(projectId)}/mapping-tables`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -311,7 +435,7 @@ export async function createMappingTable(projectId, data) {
 export async function updateMappingTable(projectId, tableId, data) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.patch(
-    `/projects/${projectId}/mapping-tables/${tableId}`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -324,7 +448,7 @@ export async function updateMappingTable(projectId, tableId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteMappingTable(projectId, tableId) {
-  return apiClient.delete(`/projects/${projectId}/mapping-tables/${tableId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -346,7 +470,7 @@ export async function getMappingTableColumns(projectId, tableId) {
       return table?.columns || [];
     }
     const data = await apiClient.get(
-      `/projects/${projectId}/mapping-tables/${tableId}/columns`,
+      `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns`,
     );
     return convertKeysToCamel(data);
   } catch (error) {
@@ -377,7 +501,7 @@ export async function getMappingTableColumnById(projectId, tableId, columnId) {
       return column;
     }
     const data = await apiClient.get(
-      `/projects/${projectId}/mapping-tables/${tableId}/columns/${columnId}`,
+      `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns/${parseInt(columnId)}`,
     );
     return convertKeysToCamel(data);
   } catch (error) {
@@ -402,7 +526,7 @@ export async function getMappingTableColumnById(projectId, tableId, columnId) {
 export async function createMappingTableColumn(projectId, tableId, data) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.post(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -424,7 +548,7 @@ export async function updateMappingTableColumn(
 ) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.patch(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns/${columnId}`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns/${parseInt(columnId)}`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -439,7 +563,7 @@ export async function updateMappingTableColumn(
  */
 export async function deleteMappingTableColumn(projectId, tableId, columnId) {
   return apiClient.delete(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns/${columnId}`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns/${parseInt(columnId)}`,
   );
 }
 
@@ -461,8 +585,8 @@ export async function getRPIMappings(projectId, params = {}) {
     }
     const queryString = new URLSearchParams(params).toString();
     const endpoint = queryString
-      ? `/projects/${projectId}/rpi-mappings?${queryString}`
-      : `/projects/${projectId}/rpi-mappings`;
+      ? `/projects/${parseInt(projectId)}/rpi-mappings?${queryString}`
+      : `/projects/${parseInt(projectId)}/rpi-mappings`;
     const data = await apiClient.get(endpoint);
     return convertKeysToCamel(data);
   } catch (error) {
@@ -477,7 +601,7 @@ export async function getRPIMappings(projectId, params = {}) {
  * @returns {Promise<{total: number, approved: number, in_review: number, draft: number}>}
  */
 export async function getRPIMappingsStats(projectId) {
-  const data = await apiClient.get(`/projects/${projectId}/rpi-mappings/stats`);
+  const data = await apiClient.get(`/projects/${parseInt(projectId)}/rpi-mappings/stats`);
   return convertKeysToCamel(data);
 }
 
@@ -499,7 +623,7 @@ export async function getRPIMappingById(projectId, rpiId) {
       return mapping;
     }
     const data = await apiClient.get(
-      `/projects/${projectId}/rpi-mappings/${rpiId}`,
+      `/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`,
     );
     return convertKeysToCamel(data);
   } catch (error) {
@@ -522,7 +646,7 @@ export async function getRPIMappingById(projectId, rpiId) {
 export async function createRPIMapping(projectId, data) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.post(
-    `/projects/${projectId}/rpi-mappings`,
+    `/projects/${parseInt(projectId)}/rpi-mappings`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -538,7 +662,7 @@ export async function createRPIMapping(projectId, data) {
 export async function updateRPIMapping(projectId, rpiId, data) {
   const snakeData = convertKeysToSnake(data);
   const result = await apiClient.patch(
-    `/projects/${projectId}/rpi-mappings/${rpiId}`,
+    `/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`,
     snakeData,
   );
   return convertKeysToCamel(result);
@@ -551,7 +675,7 @@ export async function updateRPIMapping(projectId, rpiId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteRPIMapping(projectId, rpiId) {
-  return apiClient.delete(`/projects/${projectId}/rpi-mappings/${rpiId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -564,6 +688,10 @@ export const ProjectsApi = {
   createProject,
   updateProject,
   deleteProject,
+  getProjectKpi,
+  getRecentProjects,
+  getProjectsWithFilters,
+  getSourceMappingTables,
   getSources,
   getSourceById,
   createSource,

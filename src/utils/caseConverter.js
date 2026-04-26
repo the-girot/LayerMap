@@ -8,7 +8,12 @@
  * @returns {string} - Строка в snake_case
  */
 export function camelToSnake(str) {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+  // Обрабатываем camelCase (например, isCalculated → is_calculated)
+  // и уже snake_case строки (например, is_calculated → is_calculated)
+  return str
+    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+    .toLowerCase();
 }
 
 /**

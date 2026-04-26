@@ -7,11 +7,16 @@
     </template>
     <template #end>
       <div class="flex items-center gap-10">
-        <p v-if="authStore.user?.full_name" class="text-lg font-medium">
-          {{ authStore.user.full_name }}
-        </p>
-        <Button v-if="authStore.isAuthenticated" @click="handleLogout" label="Выйти" icon="pi pi-sign-out"
-          severity="secondary" class="mr-2" />
+        <template v-if="authStore.isAuthenticated">
+          <p v-if="authStore.user?.full_name" class="text-lg font-medium">
+            {{ authStore.user.full_name }}
+          </p>
+          <Button @click="handleLogout" label="Выйти" icon="pi pi-sign-out" severity="secondary" class="mr-2" />
+        </template>
+        <template v-else>
+          <Button to="/login" label="Войти" icon="pi pi-sign-in" severity="secondary" class="mr-2" />
+          <Button to="/register" label="Регистрация" icon="pi pi-user-plus" severity="info" />
+        </template>
         <p class="text-2xl self-center">{{ currentDate }}</p>
       </div>
     </template>
@@ -76,7 +81,6 @@ function handleLogout() {
     detail: "Вы успешно вышли из системы",
     life: 3000,
   });
-  router.push({ name: "Login" });
 }
 
 let intervalId = null;

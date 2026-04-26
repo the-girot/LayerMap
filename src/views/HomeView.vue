@@ -1,22 +1,26 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useProjectsStore } from '@/stores/projects';
+import { getRecentProjects } from '@/api/projects';
 import KpiCards from '@/components/home/KpiCards.vue';
 import ProjectsTable from '@/components/home/ProjectsTable.vue';
 import QuickActions from '@/components/home/QuickActions.vue';
 import Button from 'primevue/button';
 import CreateProjectDialog from '@/components/common/CreateProjectDialog.vue';
 
-const projectsStore = useProjectsStore();
+const recentProjects = ref([]);
 const showCreateProjectDialog = ref(false);
 
 // Загрузка последних проектов при монтировании компонента
 onMounted(async () => {
-    await projectsStore.loadProjects({ page: 1, size: 10 });
+    try {
+        recentProjects.value = await getRecentProjects(10);
+    } catch (err) {
+        console.error('Failed to load recent projects:', err);
+    }
 });
 
 async function handleCreateProject(data) {
-    await projectsStore.createProject(data);
+    await getRecentProjects(10);
     showCreateProjectDialog.value = false;
 }
 </script>

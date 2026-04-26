@@ -7,8 +7,8 @@
         <div class="form-group">
           <label for="email">Email</label>
           <InputText
-            id="username"
-            v-model="username"
+            id="email"
+            v-model="email"
             type="email"
             placeholder="example@company.com"
             :class="{ 'p-invalid': errors.email }"
@@ -54,22 +54,23 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import { useRouter } from "vue-router";
+import { ref, reactive, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "primevue/usetoast";
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const toast = useToast();
 
-const username = ref("");
+const email = ref("");
 const password = ref("");
 const loading = ref(false);
 const generalError = ref("");
 
 const errors = reactive({
-  username: "",
+  email: "",
   password: "",
 });
 
@@ -77,7 +78,7 @@ const errors = reactive({
  * Очистить ошибки формы
  */
 function clearErrors() {
-  errors.username = "";
+  errors.email = "";
   errors.password = "";
   generalError.value = "";
 }
@@ -90,7 +91,7 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    await authStore.login(username.value, password.value);
+    await authStore.login({ email: email.value, password: password.value });
 
     toast.add({
       severity: "success",
@@ -99,22 +100,20 @@ async function handleLogin() {
       life: 3000,
     });
 
-    router.push({ name: "Home" });
+    const redirect = route.query.redirect || "/";
+    router.push(redirect);
   } catch (error) {
-    if (error.status === 401) {
-      errors.username = "Неверный email или пароль";
-      errors.password = "Неверный email или пароль";
-    } else if (error.status === 422) {
+    if (error.response?.status === 401) {
+      generalError.value = "Неверный email или пароль";
+    } else if (error.response?.status === 422) {
       // Валидационные ошибки от бэкенда
-      if (error.details?.detail) {
-        const detail = error.details.detail;
-        if (Array.isArray(detail)) {
-          for (const fieldError of detail) {
-            const field = fieldError.loc?.[0];
-            const msg = fieldError.msg;
-            if (field === "username") errors.username = msg;
-            if (field === "password") errors.password = msg;
-          }
+      const detail = error.response.data?.detail;
+      if (Array.isArray(detail)) {
+        for (const fieldError of detail) {
+          const field = fieldError.loc?.[0];
+          const msg = fieldError.msg;
+          if (field === "email") errors.email = msg;
+          if (field === "password") errors.password = msg;
         }
       }
     } else {
@@ -124,6 +123,13 @@ async function handleLogin() {
     loading.value = false;
   }
 }
+
+// Проверка на уже авторизованного пользователя
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    router.push("/");
+  }
+});
 </script>
 
 <style scoped>
@@ -149,7 +155,7 @@ async function handleLogin() {
   margin: 0 0 2rem;
   font-size: 1.75rem;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #1f2937;
   text-align: center;
 }
 
@@ -171,25 +177,6 @@ async function handleLogin() {
   color: #374151;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-group input.p-invalid {
-  border-color: #ef4444;
-}
-
 .error-message {
   font-size: 0.75rem;
   color: #ef4444;
@@ -197,7 +184,7 @@ async function handleLogin() {
 
 .general-error {
   padding: 0.75rem;
-  background: #fee2e2;
+  background-color: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 6px;
   color: #dc2626;
@@ -205,10 +192,6 @@ async function handleLogin() {
 }
 
 .login-button {
-  width: 100%;
-  padding: 0.875rem;
-  font-size: 1rem;
-  font-weight: 500;
   margin-top: 0.5rem;
 }
 
@@ -218,14 +201,12 @@ async function handleLogin() {
 }
 
 .form-footer a {
-  color: #667eea;
-  text-decoration: none;
+  color: #6366f1;
   font-size: 0.875rem;
-  transition: color 0.2s;
+  text-decoration: none;
 }
 
 .form-footer a:hover {
-  color: #5a67d8;
   text-decoration: underline;
 }
 </style>

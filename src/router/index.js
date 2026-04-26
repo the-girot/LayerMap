@@ -5,6 +5,7 @@ import ProjectsListView from "@/views/ProjectsListView.vue";
 import ProjectDetailView from "@/views/ProjectDetailView.vue";
 import RPIMappingView from "@/views/RPIMappingView.vue";
 import SourceDetailView from "@/views/SourceDetailView.vue";
+import { useAuthStore } from "../stores/auth.js";
 
 /**
  * Фабрика роутера с маршрутными защитниками.
@@ -21,11 +22,13 @@ export function createAppRouter() {
         path: "/login",
         name: "Login",
         component: () => import("@/views/LoginView.vue"),
+        meta: { requiresAuth: false },
       },
       {
         path: "/register",
         name: "Register",
         component: () => import("@/views/RegisterView.vue"),
+        meta: { requiresAuth: false },
       },
       {
         path: "/",
@@ -79,16 +82,21 @@ export function createAppRouter() {
   /**
    * Глобальный guard для защиты маршрутов
    */
-  router.beforeEach((to, from, next) => {
-    const token = localStorage.getItem("access_token");
+  router.beforeEach(async (to) => {
+    const authStore = useAuthStore();
 
-    if (to.meta.requiresAuth && !token) {
-      next({ name: "Login" });
-    } else if ((to.name === "Login" || to.name === "Register") && token) {
-      next({ name: "Home" });
-    } else {
-      next();
+    if (to.meta.requiresAuth !== false && !authStore.isAuthenticated) {
+      await authStore.loadUser();
+      if (!authStore.isAuthenticated) {
+        return { path: '/login', query: { redirect: to.fullPath } };
+      }
     }
+
+    if ((to.name === "Login" || to.name === "Register") && authStore.isAuthenticated) {
+      return { name: "Home" };
+    }
+
+    return true;
   });
 
   return router;

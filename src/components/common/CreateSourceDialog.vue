@@ -82,9 +82,13 @@ async function handleSubmit() {
         emit("create", { ...form.value, project_id: props.projectId });
         resetForm();
     } catch (err) {
-        // Если ошибка 422 с полями, передаем их родителю
+        // Если ошибка 422 с полями, отображаем ошибки пофилдово
         if (err.status === 422 && err.errors) {
             handleServerValidationErrors(err.errors);
+        } else {
+            // Для других ошибок передаем их родителю
+            emit("error", err);
+            resetForm();
         }
     } finally {
         loading.value = false;

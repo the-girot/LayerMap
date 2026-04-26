@@ -33,10 +33,14 @@ app.use(PrimeVue, {
   },
 });
 
-// Инициализация сессии при загрузке приложения
+// Инициализация при загрузке приложения
+// 1. Удаляем старый токен из localStorage (миграция)
+localStorage.removeItem("access_token");
+
+// 2. Проверяем текущую сессию через API
 const authStore = useAuthStore();
 router.isReady().then(() => {
-  authStore.restoreSession();
+  authStore.loadUser();
 });
 
 app.mount("#app");

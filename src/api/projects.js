@@ -216,7 +216,7 @@ export async function getProjects() {
  * @returns {Promise<Project>}
  */
 export async function getProjectById(projectId) {
-  return apiClient.get(`/projects/${projectId}`);
+  return apiClient.get(`/projects/${parseInt(projectId)}`);
 }
 
 /**
@@ -235,7 +235,7 @@ export async function createProject(data) {
  * @returns {Promise<Project>}
  */
 export async function updateProject(projectId, data) {
-  return apiClient.patch(`/projects/${projectId}`, data);
+  return apiClient.patch(`/projects/${parseInt(projectId)}`, data);
 }
 
 /**
@@ -244,7 +244,7 @@ export async function updateProject(projectId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteProject(projectId) {
-  return apiClient.delete(`/projects/${projectId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -257,7 +257,7 @@ export async function deleteProject(projectId) {
  * @returns {Promise<Source[]>}
  */
 export async function getSources(projectId) {
-  return apiClient.get(`/projects/${projectId}/sources`);
+  return apiClient.get(`/projects/${parseInt(projectId)}/sources`);
 }
 
 /**
@@ -268,7 +268,7 @@ export async function getSources(projectId) {
  */
 export async function getSourceMappingTables(projectId, sourceId) {
   return apiClient.get(
-    `/projects/${projectId}/sources/${sourceId}/mapping-tables`,
+    `/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}/mapping-tables`,
   );
 }
 
@@ -279,7 +279,7 @@ export async function getSourceMappingTables(projectId, sourceId) {
  * @returns {Promise<Source>}
  */
 export async function getSourceById(projectId, sourceId) {
-  return apiClient.get(`/projects/${projectId}/sources/${sourceId}`);
+  return apiClient.get(`/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`);
 }
 
 /**
@@ -289,7 +289,7 @@ export async function getSourceById(projectId, sourceId) {
  * @returns {Promise<Source>}
  */
 export async function createSource(projectId, data) {
-  return apiClient.post(`/projects/${projectId}/sources`, data);
+  return apiClient.post(`/projects/${parseInt(projectId)}/sources`, data);
 }
 
 /**
@@ -300,7 +300,7 @@ export async function createSource(projectId, data) {
  * @returns {Promise<Source>}
  */
 export async function updateSource(projectId, sourceId, data) {
-  return apiClient.patch(`/projects/${projectId}/sources/${sourceId}`, data);
+  return apiClient.patch(`/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`, data);
 }
 
 /**
@@ -310,7 +310,7 @@ export async function updateSource(projectId, sourceId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteSource(projectId, sourceId) {
-  return apiClient.delete(`/projects/${projectId}/sources/${sourceId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -323,7 +323,7 @@ export async function deleteSource(projectId, sourceId) {
  * @returns {Promise<MappingTable[]>}
  */
 export async function getMappingTables(projectId) {
-  return apiClient.get(`/projects/${projectId}/mapping-tables`);
+  return apiClient.get(`/projects/${parseInt(projectId)}/mapping-tables`);
 }
 
 /**
@@ -333,7 +333,7 @@ export async function getMappingTables(projectId) {
  * @returns {Promise<MappingTable>}
  */
 export async function getMappingTableById(projectId, tableId) {
-  return apiClient.get(`/projects/${projectId}/mapping-tables/${tableId}`);
+  return apiClient.get(`/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`);
 }
 
 /**
@@ -343,7 +343,7 @@ export async function getMappingTableById(projectId, tableId) {
  * @returns {Promise<MappingTable>}
  */
 export async function createMappingTable(projectId, data) {
-  return apiClient.post(`/projects/${projectId}/mapping-tables`, data);
+  return apiClient.post(`/projects/${parseInt(projectId)}/mapping-tables`, data);
 }
 
 /**
@@ -355,7 +355,7 @@ export async function createMappingTable(projectId, data) {
  */
 export async function updateMappingTable(projectId, tableId, data) {
   return apiClient.patch(
-    `/projects/${projectId}/mapping-tables/${tableId}`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`,
     data,
   );
 }
@@ -367,7 +367,7 @@ export async function updateMappingTable(projectId, tableId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteMappingTable(projectId, tableId) {
-  return apiClient.delete(`/projects/${projectId}/mapping-tables/${tableId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -382,7 +382,7 @@ export async function deleteMappingTable(projectId, tableId) {
  */
 export async function getMappingTableColumns(projectId, tableId) {
   return apiClient.get(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns`,
   );
 }
 
@@ -395,7 +395,7 @@ export async function getMappingTableColumns(projectId, tableId) {
  */
 export async function getMappingTableColumnById(projectId, tableId, columnId) {
   return apiClient.get(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns/${columnId}`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns/${parseInt(columnId)}`,
   );
 }
 
@@ -408,7 +408,7 @@ export async function getMappingTableColumnById(projectId, tableId, columnId) {
  */
 export async function createMappingTableColumn(projectId, tableId, data) {
   return apiClient.post(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns`,
     data,
   );
 }
@@ -428,7 +428,7 @@ export async function updateMappingTableColumn(
   data,
 ) {
   return apiClient.patch(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns/${columnId}`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns/${parseInt(columnId)}`,
     data,
   );
 }
@@ -442,7 +442,7 @@ export async function updateMappingTableColumn(
  */
 export async function deleteMappingTableColumn(projectId, tableId, columnId) {
   return apiClient.delete(
-    `/projects/${projectId}/mapping-tables/${tableId}/columns/${columnId}`,
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}/columns/${parseInt(columnId)}`,
   );
 }
 
@@ -459,8 +459,8 @@ export async function deleteMappingTableColumn(projectId, tableId, columnId) {
 export async function getRPIMappings(projectId, params = {}) {
   const queryString = new URLSearchParams(params).toString();
   const endpoint = queryString
-    ? `/projects/${projectId}/rpi-mappings?${queryString}`
-    : `/projects/${projectId}/rpi-mappings`;
+    ? `/projects/${parseInt(projectId)}/rpi-mappings?${queryString}`
+    : `/projects/${parseInt(projectId)}/rpi-mappings`;
   return apiClient.get(endpoint);
 }
 
@@ -470,7 +470,7 @@ export async function getRPIMappings(projectId, params = {}) {
  * @returns {Promise<{total: number, approved: number, in_review: number, draft: number}>}
  */
 export async function getRPIMappingsStats(projectId) {
-  return apiClient.get(`/projects/${projectId}/rpi-mappings/stats`);
+  return apiClient.get(`/projects/${parseInt(projectId)}/rpi-mappings/stats`);
 }
 
 /**
@@ -480,7 +480,7 @@ export async function getRPIMappingsStats(projectId) {
  * @returns {Promise<RPIMapping>}
  */
 export async function getRPIMappingById(projectId, rpiId) {
-  return apiClient.get(`/projects/${projectId}/rpi-mappings/${rpiId}`);
+  return apiClient.get(`/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`);
 }
 
 /**
@@ -490,7 +490,7 @@ export async function getRPIMappingById(projectId, rpiId) {
  * @returns {Promise<RPIMapping>}
  */
 export async function createRPIMapping(projectId, data) {
-  return apiClient.post(`/projects/${projectId}/rpi-mappings`, data);
+  return apiClient.post(`/projects/${parseInt(projectId)}/rpi-mappings`, data);
 }
 
 /**
@@ -501,7 +501,7 @@ export async function createRPIMapping(projectId, data) {
  * @returns {Promise<RPIMapping>}
  */
 export async function updateRPIMapping(projectId, rpiId, data) {
-  return apiClient.patch(`/projects/${projectId}/rpi-mappings/${rpiId}`, data);
+  return apiClient.patch(`/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`, data);
 }
 
 /**
@@ -511,7 +511,7 @@ export async function updateRPIMapping(projectId, rpiId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteRPIMapping(projectId, rpiId) {
-  return apiClient.delete(`/projects/${projectId}/rpi-mappings/${rpiId}`);
+  return apiClient.delete(`/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`);
 }
 
 // ───────────────────────────────────────────────────────────────

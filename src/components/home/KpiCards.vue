@@ -1,8 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useProjectsStore } from '@/stores/projects';
-
-const store = useProjectsStore();
+import { getProjectKpi } from '@/api/projects';
 
 // KPI values from backend
 const kpi = ref({ total: 0, active: 0, draft: 0, archived: 0 });
@@ -33,12 +31,12 @@ function animateValue(targetRef, targetValue, duration = 700) {
 
 onMounted(async () => {
     try {
-        await store.loadProjectKpi();
-        kpi.value = store.kpi;
-        animateValue(totalProjects, kpi.value.total);
-        animateValue(activeProjects, kpi.value.active);
-        animateValue(draftProjects, kpi.value.draft);
-        animateValue(archivedProjects, kpi.value.archived);
+        const data = await getProjectKpi();
+        kpi.value = data;
+        animateValue(totalProjects, data.total);
+        animateValue(activeProjects, data.active);
+        animateValue(draftProjects, data.draft);
+        animateValue(archivedProjects, data.archived);
     } catch (err) {
         console.error('Failed to load KPI:', err);
     }
