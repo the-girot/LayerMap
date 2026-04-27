@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import AppTopbar from "./AppTopbar.vue";
-import ApiStatusIndicator from "@/components/common/ApiStatusIndicator.vue";
 
 // Инициализируем isVisible с значением из localStorage или false по умолчанию
 const isVisible = ref(
@@ -29,9 +28,6 @@ onMounted(() => {
 
     <div class="flex mt-20" style="height: 90vh;">
       <div class=" transition-all duration-300 w-full">
-        <div class="flex justify-end mb-2 px-4">
-          <ApiStatusIndicator />
-        </div>
         <router-view class="p-0 pe-4"> </router-view>
       </div>
     </div>

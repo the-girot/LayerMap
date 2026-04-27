@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia';
-import { login, getMe, logout } from '../api/auth.js';
+import { defineStore } from "pinia";
+import { login, getMe, logout } from "../api/auth.js";
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
     isAuthenticated: false,
@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async login(credentials) {
-      await login(credentials.email, credentials.password);
+      await login(credentials.username, credentials.password);
       this.isInitialized = false;
       await this.loadUser();
     },
@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.isAuthenticated = false;
       this.isInitialized = false;
-      window.location.href = '/login';
+      window.location.href = "/login";
     },
   },
 });

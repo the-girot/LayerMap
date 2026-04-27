@@ -225,8 +225,7 @@ export async function getProjectById(projectId) {
  * @returns {Promise<Project>}
  */
 export async function createProject(data) {
-  const response = await apiClient.post("/projects", data);
-  return response.data; // ← только данные
+  return apiClient.post("/projects", data);
 }
 
 /**
@@ -280,7 +279,9 @@ export async function getSourceMappingTables(projectId, sourceId) {
  * @returns {Promise<Source>}
  */
 export async function getSourceById(projectId, sourceId) {
-  return apiClient.get(`/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`);
+  return apiClient.get(
+    `/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`,
+  );
 }
 
 /**
@@ -301,7 +302,10 @@ export async function createSource(projectId, data) {
  * @returns {Promise<Source>}
  */
 export async function updateSource(projectId, sourceId, data) {
-  return apiClient.patch(`/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`, data);
+  return apiClient.patch(
+    `/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`,
+    data,
+  );
 }
 
 /**
@@ -311,7 +315,9 @@ export async function updateSource(projectId, sourceId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteSource(projectId, sourceId) {
-  return apiClient.delete(`/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`);
+  return apiClient.delete(
+    `/projects/${parseInt(projectId)}/sources/${parseInt(sourceId)}`,
+  );
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -334,7 +340,9 @@ export async function getMappingTables(projectId) {
  * @returns {Promise<MappingTable>}
  */
 export async function getMappingTableById(projectId, tableId) {
-  return apiClient.get(`/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`);
+  return apiClient.get(
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`,
+  );
 }
 
 /**
@@ -344,7 +352,10 @@ export async function getMappingTableById(projectId, tableId) {
  * @returns {Promise<MappingTable>}
  */
 export async function createMappingTable(projectId, data) {
-  return apiClient.post(`/projects/${parseInt(projectId)}/mapping-tables`, data);
+  return apiClient.post(
+    `/projects/${parseInt(projectId)}/mapping-tables`,
+    data,
+  );
 }
 
 /**
@@ -368,7 +379,9 @@ export async function updateMappingTable(projectId, tableId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteMappingTable(projectId, tableId) {
-  return apiClient.delete(`/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`);
+  return apiClient.delete(
+    `/projects/${parseInt(projectId)}/mapping-tables/${parseInt(tableId)}`,
+  );
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -481,7 +494,9 @@ export async function getRPIMappingsStats(projectId) {
  * @returns {Promise<RPIMapping>}
  */
 export async function getRPIMappingById(projectId, rpiId) {
-  return apiClient.get(`/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`);
+  return apiClient.get(
+    `/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`,
+  );
 }
 
 /**
@@ -502,7 +517,10 @@ export async function createRPIMapping(projectId, data) {
  * @returns {Promise<RPIMapping>}
  */
 export async function updateRPIMapping(projectId, rpiId, data) {
-  return apiClient.patch(`/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`, data);
+  return apiClient.patch(
+    `/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`,
+    data,
+  );
 }
 
 /**
@@ -512,7 +530,9 @@ export async function updateRPIMapping(projectId, rpiId, data) {
  * @returns {Promise<void>}
  */
 export async function deleteRPIMapping(projectId, rpiId) {
-  return apiClient.delete(`/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`);
+  return apiClient.delete(
+    `/projects/${parseInt(projectId)}/rpi-mappings/${parseInt(rpiId)}`,
+  );
 }
 
 // ───────────────────────────────────────────────────────────────

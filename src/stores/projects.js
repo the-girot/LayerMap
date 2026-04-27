@@ -12,10 +12,10 @@
  * @property {number} approved
  * @property {number} drafts
  * @property {number} inReview
-  * @property {string} created_at
-  * @property {string} updated_at
-  *
-  * @typedef {Object} Source
+ * @property {string} created_at
+ * @property {string} updated_at
+ *
+ * @typedef {Object} Source
  * @property {number} id
  * @property {number} project_id
  * @property {string} name
@@ -109,15 +109,11 @@ export const useProjectsStore = defineStore("projects", () => {
 
   /** Дата последнего обновления среди всех проектов */
   const lastUpdateDate = computed(() => {
-    const dates = projects.value.map((p) => {
-      const [day, month, year] = p.updated_at.split(".");
-      return new Date(`${year}-${month}-${day}`);
-    });
+    if (!projects.value.length) return "—";
+    const dates = projects.value.map((p) => new Date(p.updated_at));
     const maxDate = new Date(Math.max(...dates));
-    const day = String(maxDate.getDate()).padStart(2, "0");
-    const month = String(maxDate.getMonth() + 1).padStart(2, "0");
-    const year = maxDate.getFullYear();
-    return `${day}.${month}.${year}`;
+    if (isNaN(maxDate.getTime())) return "—";
+    return maxDate.toLocaleDateString("ru-RU");
   });
 
   /**
@@ -230,9 +226,9 @@ export const useProjectsStore = defineStore("projects", () => {
       // Обновляем проект в списке
       const index = projects.value.findIndex((p) => p.id === project.id);
       if (index !== -1) {
-        projects.value[index] = project;
+        projects.value[index] = { ...project, id: Number(project.id) };
       } else {
-        projects.value.push(project);
+        projects.value.push({ ...project, id: Number(project.id) });
       }
 
       sources.value[projectId] = projectSources;
@@ -295,7 +291,7 @@ export const useProjectsStore = defineStore("projects", () => {
     error.value = null;
     try {
       const newProject = await ProjectsApi.createProject(data);
-      projects.value.push(newProject);
+      projects.value.push({ ...newProject, id: Number(newProject.id) });
       return newProject;
     } catch (err) {
       error.value =
