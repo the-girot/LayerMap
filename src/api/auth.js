@@ -1,8 +1,15 @@
 import apiClient from './client.js';
 
 export async function login(email, password) {
-  await apiClient.post('/auth/login/json', { email, password });
-  // Токен пришёл как cookie через Set-Cookie, не в JSON
+  const formData = new URLSearchParams();
+  formData.append('username', email);  // OAuth2 требует поле "username"
+  formData.append('password', password);
+
+  await apiClient.post('/auth/login', formData, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  });
 }
 
 export async function register(data) {

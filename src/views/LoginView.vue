@@ -5,17 +5,17 @@
 
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="username">username</label>
           <InputText
-            id="email"
-            v-model="email"
-            type="email"
+            id="username"
+            v-model="username"
+            type="text"
             placeholder="example@company.com"
-            :class="{ 'p-invalid': errors.email }"
-            autocomplete="email"
+            :class="{ 'p-invalid': errors.username }"
+            autocomplete="username"
             required
           />
-          <small v-if="errors.email" class="error-message">{{ errors.email }}</small>
+          <small v-if="errors.username" class="error-message">{{ errors.username }}</small>
         </div>
 
         <div class="form-group">
@@ -64,13 +64,13 @@ const route = useRoute();
 const authStore = useAuthStore();
 const toast = useToast();
 
-const email = ref("");
+const username = ref("");
 const password = ref("");
 const loading = ref(false);
 const generalError = ref("");
 
 const errors = reactive({
-  email: "",
+  username: "",
   password: "",
 });
 
@@ -78,7 +78,7 @@ const errors = reactive({
  * Очистить ошибки формы
  */
 function clearErrors() {
-  errors.email = "";
+  errors.username = "";
   errors.password = "";
   generalError.value = "";
 }
@@ -91,7 +91,7 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    await authStore.login({ email: email.value, password: password.value });
+    await authStore.login({ username: username.value, password: password.value });
 
     toast.add({
       severity: "success",
@@ -104,7 +104,7 @@ async function handleLogin() {
     router.push(redirect);
   } catch (error) {
     if (error.response?.status === 401) {
-      generalError.value = "Неверный email или пароль";
+      generalError.value = "Неверный username или пароль";
     } else if (error.response?.status === 422) {
       // Валидационные ошибки от бэкенда
       const detail = error.response.data?.detail;
@@ -112,7 +112,7 @@ async function handleLogin() {
         for (const fieldError of detail) {
           const field = fieldError.loc?.[0];
           const msg = fieldError.msg;
-          if (field === "email") errors.email = msg;
+          if (field === "username") errors.username = msg;
           if (field === "password") errors.password = msg;
         }
       }

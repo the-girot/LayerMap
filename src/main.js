@@ -12,11 +12,9 @@ import { useAuthStore } from "@/stores/auth";
 
 const app = createApp(App);
 
-// Создаём Pinia
 const pinia = createPinia();
 app.use(pinia);
 
-// Создаём роутер
 const router = createAppRouter();
 app.use(router);
 
@@ -33,14 +31,13 @@ app.use(PrimeVue, {
   },
 });
 
-// Инициализация при загрузке приложения
-// 1. Удаляем старый токен из localStorage (миграция)
 localStorage.removeItem("access_token");
 
-// 2. Проверяем текущую сессию через API
+// ✅ Ждём роутер И loadUser до mount
 const authStore = useAuthStore();
-router.isReady().then(() => {
-  authStore.loadUser();
-});
+await Promise.all([
+  router.isReady(),
+  authStore.loadUser(),
+]);
 
-app.mount("#app");
+app.mount("#app"); // ← mount только после инициализации

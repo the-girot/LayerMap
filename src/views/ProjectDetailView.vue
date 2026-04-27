@@ -224,7 +224,7 @@ function openColumnDialog(tableId) {
                         <i class="pi pi-calendar"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-lg font-bold text-content">{{ formatDate(project.updatedAt) }}</span>
+                        <span class="text-lg font-bold text-content">{{ formatDate(project.updated_at) }}</span>
                         <span class="text-xs text-content-muted">Последнее обновление</span>
                     </div>
                 </div>
@@ -265,16 +265,16 @@ function openColumnDialog(tableId) {
                             </template>
                         </Column>
 
-                        <Column field="rowCount" header="Строк" style="min-width: 120px">
+                        <Column field="row_count" header="Строк" style="min-width: 120px">
                             <template #body="{ data }">
-                                <span class="font-mono text-sm text-content-secondary">{{ formatNumber(data.rowCount)
+                                <span class="font-mono text-sm text-content-secondary">{{ formatNumber(data.row_count)
                                     }}</span>
                             </template>
                         </Column>
 
-                        <Column field="lastUpdated" header="Обновлён" style="min-width: 130px">
+                        <Column field="last_updated" header="Обновлён" style="min-width: 130px">
                             <template #body="{ data }">
-                                <span class="text-sm text-content-muted">{{ formatDate(data.lastUpdated) }}</span>
+                                <span class="text-sm text-content-muted">{{ formatDate(data.last_updated) }}</span>
                             </template>
                         </Column>
 

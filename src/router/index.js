@@ -85,15 +85,21 @@ export function createAppRouter() {
   router.beforeEach(async (to) => {
     const authStore = useAuthStore();
 
-    if (to.meta.requiresAuth !== false && !authStore.isAuthenticated) {
+    // Ждём инициализации, если loadUser ещё не завершился
+    if (!authStore.isInitialized) {
       await authStore.loadUser();
-      if (!authStore.isAuthenticated) {
-        return { path: '/login', query: { redirect: to.fullPath } };
-      }
     }
 
-    if ((to.name === "Login" || to.name === "Register") && authStore.isAuthenticated) {
-      return { name: "Home" };
+    const isPublic = to.name === "Login" || to.name === "Register";
+
+    // Авторизованный пользователь не должен попадать на login/register
+    if (isPublic) {
+      return authStore.isAuthenticated ? { name: "Home" } : true;
+    }
+
+    // Защищённый маршрут — редирект на login если не авторизован
+    if (to.meta.requiresAuth !== false && !authStore.isAuthenticated) {
+      return { path: "/login", query: { redirect: to.fullPath } };
     }
 
     return true;

@@ -46,7 +46,7 @@ function handleRowClick({ data }) {
                             :pt="{ root: '!text-xs' }" />
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-xs text-content-muted">Обновлён: {{ project.updatedAt }}</span>
+                        <span class="text-xs text-content-muted">Обновлён: {{ project.updated_at }}</span>
                         <Button label="Открыть" icon="pi pi-arrow-right" iconPos="right" text :pt="{
                             root: '!text-primary hover:!bg-primary-highlight/30 min-h-[44px]',
                             label: '!text-sm',
@@ -95,7 +95,7 @@ function handleRowClick({ data }) {
 
             <Column header="Обновлён">
                 <template #body="{ data }">
-                    <span class="text-content-muted text-sm">{{ data.updatedAt }}</span>
+                    <span class="text-content-muted text-sm">{{ data.updated_at }}</span>
                 </template>
             </Column>
 

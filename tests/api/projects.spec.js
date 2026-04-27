@@ -1,5 +1,5 @@
 // tests/api/projects.spec.js
-// Phase 2 — API Contract Tests for projectsWithMock.js
+// API Contract Tests for projects.js
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
@@ -18,7 +18,7 @@ vi.mock('../../src/api/client.js', () => ({
 }));
 
 import { apiClient } from '../../src/api/client.js';
-import * as api from '../../src/api/projectsWithMock.js';
+import * as api from '../../src/api/projects.js';
 
 const originalLocation = window.location;
 

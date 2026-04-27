@@ -162,12 +162,12 @@ function navigateToMapping() {
             <div class="rounded-lg border border-app-border bg-surface-card p-4">
                 <div class="mb-2 text-xs font-semibold uppercase tracking-wider text-content-muted">Количество строк
                 </div>
-                <div class="text-lg font-semibold text-content">{{ formatNumber(source.rowCount) }}</div>
+                <div class="text-lg font-semibold text-content">{{ formatNumber(source.row_count) }}</div>
             </div>
             <div class="rounded-lg border border-app-border bg-surface-card p-4">
                 <div class="mb-2 text-xs font-semibold uppercase tracking-wider text-content-muted">Последнее обновление
                 </div>
-                <div class="text-lg font-semibold text-content">{{ formatDate(source.lastUpdated) }}</div>
+                <div class="text-lg font-semibold text-content">{{ formatDate(source.last_updated) }}</div>
             </div>
             <div class="rounded-lg border border-app-border bg-surface-card p-4">
                 <div class="mb-2 text-xs font-semibold uppercase tracking-wider text-content-muted">Проект</div>
@@ -205,8 +205,8 @@ function navigateToMapping() {
                         <template #body="{ data }">
                             <div class="flex flex-col">
                                 <span class="text-sm font-mono font-semibold text-content">{{ data.name }}</span>
-                                <span v-if="data.dataType" class="text-[10px] font-mono text-content-muted">{{
-                                    data.dataType }}</span>
+                                <span v-if="data.data_type" class="text-[10px] font-mono text-content-muted">{{
+                                    data.data_type }}</span>
                             </div>
                         </template>
                     </Column>

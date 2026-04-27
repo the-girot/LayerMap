@@ -12,10 +12,10 @@
  * @property {number} approved
  * @property {number} drafts
  * @property {number} inReview
- * @property {string} createdAt
- * @property {string} updatedAt
- *
- * @typedef {Object} Source
+  * @property {string} created_at
+  * @property {string} updated_at
+  *
+  * @typedef {Object} Source
  * @property {number} id
  * @property {number} project_id
  * @property {string} name
@@ -110,7 +110,7 @@ export const useProjectsStore = defineStore("projects", () => {
   /** Дата последнего обновления среди всех проектов */
   const lastUpdateDate = computed(() => {
     const dates = projects.value.map((p) => {
-      const [day, month, year] = p.updatedAt.split(".");
+      const [day, month, year] = p.updated_at.split(".");
       return new Date(`${year}-${month}-${day}`);
     });
     const maxDate = new Date(Math.max(...dates));

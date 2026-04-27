@@ -20,10 +20,10 @@ export function getProjectSourceByProjectIdAndName(
 }
 
 /**
- * Получить колонку по sourceColumnId для записи
+ * Получить колонку по source_column_id для записи
  * @param {Object} data - Данные записи
  * @param {string} data.source - Имя источника
- * @param {string} data.sourceColumnId - ID колонки
+ * @param {string} data.source_column_id - ID колонки
  * @param {string} projectId - ID проекта
  * @param {Array} sources - Массив источников проекта
  * @param {Array} mappingTables - Массив таблиц маппинга
@@ -36,7 +36,7 @@ export function getMappingColumnForRecord(
   mappingTables,
 ) {
   if (
-    !data?.sourceColumnId ||
+    !data?.source_column_id ||
     !data?.source ||
     !projectId ||
     !sources ||
@@ -50,14 +50,14 @@ export function getMappingColumnForRecord(
   );
   if (!source) return null;
   const table = mappingTables.find((t) => t.name === source.name);
-  return table?.columns.find((c) => c.id === data.sourceColumnId) || null;
+  return table?.columns.find((c) => c.id === data.source_column_id) || null;
 }
 
 /**
  * Получить класс бейджа типа колонки
  * @param {Object} data - Данные записи
  * @param {string} data.source - Имя источника
- * @param {string} data.sourceColumnId - ID колонки
+ * @param {string} data.source_column_id - ID колонки
  * @param {string} projectId - ID проекта
  * @param {Array} sources - Массив источников проекта
  * @param {Array} mappingTables - Массив таблиц маппинга
@@ -76,7 +76,7 @@ export function getColumnTypeBadgeClass(
     mappingTables,
   );
   if (!col) return "bg-gray-100 text-gray-700";
-  if (col.isCalculated) return "bg-orange-100 text-orange-700";
+  if (col.is_calculated) return "bg-orange-100 text-orange-700";
   if (col.type === "metric") return "bg-indigo-100 text-indigo-700";
   return "bg-emerald-100 text-emerald-700";
 }
@@ -85,7 +85,7 @@ export function getColumnTypeBadgeClass(
  * Получить букву бейджа типа колонки
  * @param {Object} data - Данные записи
  * @param {string} data.source - Имя источника
- * @param {string} data.sourceColumnId - ID колонки
+ * @param {string} data.source_column_id - ID колонки
  * @param {string} projectId - ID проекта
  * @param {Array} sources - Массив источников проекта
  * @param {Array} mappingTables - Массив таблиц маппинга
@@ -99,7 +99,7 @@ export function getColumnTypeBadge(data, projectId, sources, mappingTables) {
     mappingTables,
   );
   if (!col) return "?";
-  if (col.isCalculated) return "P";
+  if (col.is_calculated) return "P";
   if (col.type === "metric") return "M";
   return "D";
 }

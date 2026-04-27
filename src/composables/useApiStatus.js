@@ -3,7 +3,7 @@
  */
 
 import { ref, computed } from "vue";
-import { apiClient } from "@/api/client";
+import apiClient from "@/api/client";
 
 /**
  * @typedef {Object} HealthStatus
@@ -37,38 +37,31 @@ async function checkApiAvailability() {
   status.value = { loading: true, available: false, health: null, error: null };
 
   try {
-    const health = await apiClient.get("/health", {
-      throwOnError: false,
-      json: true,
-    });
+    const { data } = await apiClient.get("/health", { timeout: 5000 }); // ← деструктурируем data
 
-    // Ожидаем { status: "healthy", redis: true }
-    if (health && health.status === "healthy") {
+    if (data.status === "healthy") {  // ← data.status, не health.status
       status.value = {
         loading: false,
         available: true,
-        health: health,
+        health: data,
         error: null,
       };
       return true;
     }
 
-    // Если статус не "healthy", считаем API недоступным
     status.value = {
       loading: false,
       available: false,
-      health: health,
+      health: data,
       error: "API возвращает unhealthy статус",
     };
     return false;
   } catch (error) {
-    // CORS ошибка или сетевая ошибка
     status.value = {
       loading: false,
       available: false,
       health: null,
-      error:
-        error instanceof Error ? error.message : "Не удалось проверить API",
+      error: error instanceof Error ? error.message : "Не удалось проверить API",
     };
     return false;
   }

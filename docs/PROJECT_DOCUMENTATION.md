@@ -1193,7 +1193,7 @@ await refresh();
 **Usage example:**
 
 ```javascript
-import { getProjects, createRPIMapping } from "@/api/projectsWithMock";
+import { getProjects, createRPIMapping } from "@/api/projects";
 
 const projects = await getProjects();
 const newRpi = await createRPIMapping({

@@ -1,48 +1,60 @@
 import axios from 'axios';
 
+/**
+ * Класс ошибки API
+ */
+export class ApiError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Response interceptor для обработки ошибок
+// Эндпоинты где 401 — ожидаемое поведение, редирект не нужен
+const AUTH_ENDPOINTS = ['/auth/me', '/auth/login', '/auth/register'];
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    
-    if (status === 401) {
+    const url = error.config?.url || '';
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((ep) => url.includes(ep));
+
+    if (status === 401 && !isAuthEndpoint) {
+      // Сессия истекла во время работы — редирект на логин
       window.location.href = '/login';
+      return Promise.reject(error);
     }
-    
+
     if (status === 403) {
-      const config = error.config;
-      if (config && config.throwOnError === false) {
-        const errorWithMessage = new Error('Нет прав доступа');
-        errorWithMessage.status = 403;
-        errorWithMessage.message = 'Нет прав доступа';
-        return Promise.reject(errorWithMessage);
-      }
+      return Promise.reject(
+        Object.assign(new Error('Нет прав доступа'), { status: 403 })
+      );
     }
-    
+
     if (status === 409) {
-      const config = error.config;
-      if (config && config.throwOnError === false) {
-        const errorWithMessage = new Error('Ресурс уже существует');
-        errorWithMessage.status = 409;
-        errorWithMessage.message = 'Ресурс уже существует';
-        return Promise.reject(errorWithMessage);
-      }
+      return Promise.reject(
+        Object.assign(new Error('Ресурс уже существует'), { status: 409 })
+      );
     }
-    
+
     return Promise.reject(error);
   }
 );
 
-// Функция проверки доступности API
+/**
+ * Проверить доступность API через /health
+ * @returns {Promise<boolean>}
+ */
 export async function isApiAvailable() {
   try {
     const { data } = await apiClient.get('/health', { timeout: 5000 });
@@ -52,4 +64,13 @@ export async function isApiAvailable() {
   }
 }
 
+export { apiClient };
 export default apiClient;
+
+// Обёртка над apiClient с автоматическим извлечением data
+export const api = {
+  get:    (url, config) => apiClient.get(url, config).then(r => r.data),
+  post:   (url, data, config) => apiClient.post(url, data, config).then(r => r.data),
+  patch:  (url, data, config) => apiClient.patch(url, data, config).then(r => r.data),
+  delete: (url, config) => apiClient.delete(url, config).then(r => r.data),
+};

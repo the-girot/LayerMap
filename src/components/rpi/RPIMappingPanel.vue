@@ -266,7 +266,7 @@ const measurementTypeLabel = computed(() => {
                             <i class="pi pi-link text-[8px] mr-1" />
                             Связано с полем: <span class="font-mono font-bold text-primary">{{
                                 selectedColumn.name }}</span>
-                            <span class="ml-1">({{ selectedColumn.dataType }})</span>
+                            <span class="ml-1">({{ selectedColumn.data_type }})</span>
                         </p>
                     </div>
 
@@ -317,7 +317,7 @@ const measurementTypeLabel = computed(() => {
                                         <span class="text-xs font-mono font-medium">{{ slotProps.option.value
                                             }}</span>
                                         <span class="ml-1.5 text-[10px] text-app-text-muted">{{
-                                            slotProps.option.dataType }}</span>
+                                            slotProps.option.data_type }}</span>
                                     </div>
                                 </div>
                                 <p v-if="slotProps.option.description"

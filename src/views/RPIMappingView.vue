@@ -65,7 +65,7 @@ const selectedSourceObj = computed(() =>
 
 const availableColumns = computed(() => {
     if (!selectedSourceObj.value) return [];
-    const tableId = selectedSourceObj.value.mappingTableId;
+    const tableId = selectedSourceObj.value.mapping_table_id;
     if (!tableId) return [];
     const table = projectMappingTables.value.find((t) => t.id === tableId);
     return table?.columns || [];
@@ -74,17 +74,17 @@ const availableColumns = computed(() => {
 const columnOptions = computed(() => {
     const options = availableColumns.value.map((col) => {
         // Guard: проверяем форму данных колонки
-        if (!col.name || !col.dataType) {
+        if (!col.name || !col.data_type) {
             console.warn('[RPIMappingView] Колонка имеет неправильную форму:', col);
         }
         return {
-            label: `${col.name} (${col.dataType})`,
+            label: `${col.name} (${col.data_type})`,
             value: col.name,
             id: col.id,
-            dataType: col.dataType,
+            dataType: col.data_type,
             description: col.description,
             type: col.type,
-            is_calculated: col.isCalculated,
+            is_calculated: col.is_calculated,
             formula: col.formula,
         };
     });

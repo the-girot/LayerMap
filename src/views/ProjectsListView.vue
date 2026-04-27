@@ -90,11 +90,11 @@ async function handleCreateProject(data) {
                         <div class="flex flex-col gap-2 rounded-lg bg-app-surface-hover p-3">
                             <div class="flex items-center gap-2 text-sm text-app-text-muted">
                                 <i class="pi pi-calendar text-xs text-content-faint"></i>
-                                <span>Создан: {{ formatDate(project.createdAt) }}</span>
+                                <span>Создан: {{ formatDate(project.created_at) }}</span>
                             </div>
                             <div class="flex items-center gap-2 text-sm text-app-text-muted">
                                 <i class="pi pi-clock text-xs text-content-faint"></i>
-                                <span>Обновлён: {{ formatDate(project.updatedAt) }}</span>
+                                <span>Обновлён: {{ formatDate(project.updated_at) }}</span>
                             </div>
                             <div class="flex items-center gap-2 text-sm text-app-text-muted">
                                 <i class="pi pi-table text-xs text-content-faint"></i>

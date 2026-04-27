@@ -3,7 +3,7 @@
  * Все методы соответствуют backend API документации.
  */
 
-import { apiClient } from "./client";
+import { api as apiClient } from "./client";
 
 // ───────────────────────────────────────────────────────────────
 // Authentication
@@ -225,7 +225,8 @@ export async function getProjectById(projectId) {
  * @returns {Promise<Project>}
  */
 export async function createProject(data) {
-  return apiClient.post("/projects", data);
+  const response = await apiClient.post("/projects", data);
+  return response.data; // ← только данные
 }
 
 /**
