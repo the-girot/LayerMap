@@ -11,7 +11,7 @@ import { createEmptyRPIForm, MEASUREMENT_TYPE_MAP } from "@/constants/rpi";
 
 /**
  * @param {import('vue').Ref<Array>} rows - Массив РПИ-записей
- * @param {object} store - Projects store instance
+ * @param {object} store - RPI Mappings store instance
  * @param {import('vue').Ref<string>} projectId - ID проекта
  * @returns {object}
  */

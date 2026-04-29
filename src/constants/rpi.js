@@ -20,15 +20,15 @@ export const RPI_OWNERSHIP_OPTIONS = [
   { label: "Техническое", value: "Техническое" },
 ];
 
-/** Опции типов измерений для UI (русские значения) */
-export const RPI_MEASUREMENT_TYPES = ["Измерение", "Метрика"];
+/** Опции типов измерений для UI (английские значения) */
+export const RPI_MEASUREMENT_TYPES = ["dimension", "metric"];
 
-/** Маппинг между русскими значениями (UI) и английскими кодами (API) */
+/** Маппинг между английскими значениями (API) и русскими кодами (UI) */
 export const MEASUREMENT_TYPE_MAP = {
-  Измерение: "dimension",
-  Метрика: "metric",
   dimension: "Измерение",
   metric: "Метрика",
+  Измерение: "dimension",
+  Метрика: "metric",
 };
 
 /** Опции принадлежности для формы */

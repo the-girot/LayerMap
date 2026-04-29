@@ -1,53 +1,86 @@
-# LayerMap Project Documentation
+# LayerMap — Project Documentation
+
+> Administrative panel for managing projects and RPI (Regulatory Performance Indicator) mappings.
+
+[![Vue 3](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js)](https://vuejs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite)](https://vitejs.dev/)
+[![PrimeVue](https://img.shields.io/badge/PrimeVue-4-3B82F6)](https://primevue.org/)
+
+---
 
 ## 1. Project Overview
 
-**Project Name:** LayerMap (package: `self-admin`)
+### Description
 
-**Description:** LayerMap is a RPI (Реестр Показателей Индикаторов — Registry of Indicators) mapping management system that enables users to create and manage analytical projects, define data sources (API, DB, FILE, STREAM), create mapping tables with columns, and map columns to RPI indicators (metrics and dimensions). The system provides a workflow-driven approach to building data mappings, with status tracking for approval processes.
+**LayerMap** is a single-page administrative web application designed for managing complex regulatory compliance projects. The application enables users to create and track projects, define data sources, establish mapping tables between source columns and regulatory indicators, and manage RPI (Regulatory Performance Indicator) mappings with full validation and workflow enforcement.
 
-**Technology Stack:**
+The application is built for compliance officers, data analysts, and project managers who need to maintain structured mappings between internal data sources and external regulatory requirements.
 
-- **Framework:** Vue 3.5.13 with Composition API (`<script setup>`)
-- **UI Library:** PrimeVue 4.3.1 with Aura theme
-- **State Management:** Pinia v3.0.1
-- **Routing:** Vue Router 4.5.0
-- **Build Tool:** Vite 6.4.1
-- **Styling:** TailwindCSS 3.4.1 with `tailwindcss-primeui` plugin
-- **Icons:** PrimeIcons 7.0.0
-- **Linting:** ESLint 9.20.1 with `eslint-plugin-vue` and `@vue/eslint-config-prettier`
-- **Formatting:** Prettier 3.5.1
+### Technology Stack
 
-**Architecture Summary:**
+| Category | Technology | Version |
+|----------|------------|---------|
+| Framework | Vue.js | 3.5.13 |
+| State Management | Pinia | 3.0.1 |
+| Router | Vue Router | 4.5.0 |
+| UI Library | PrimeVue | 4.3.1 |
+| Build Tool | Vite | 6.4.1 |
+| HTTP Client | Axios | latest |
+| Styling | Tailwind CSS | 3.4.1 |
+| Testing | Vitest | 4.1.5 |
+| CSS Framework | PrimeVue Aura Theme | - |
 
-- **Type:** Single Page Application (SPA)
-- **Component Structure:** Component-based architecture with reusable UI components, dialog forms, and layout components
-- **Data Flow Pattern:** Unidirectional data flow via Pinia stores; composable functions for reusable logic
-- **API Integration:** Custom HTTP client with automatic fallback to mock data when backend unavailable
-- **Key Pattern:** camelCase in application ↔ snake_case in API (bidirectional conversion)
+### Architecture Summary
 
-**High-Level Component Tree:**
+**Type**: Single Page Application (SPA) with client-side routing
+
+**Component Architecture**:
+- **Composition API** - All components use Vue 3 Composition API with `<script setup>` syntax
+- **Pinia Stores** - Centralized state management with modular stores (auth, projects, workflow)
+- **Composables** - Reusable logic extracted into composable functions
+- **Dialog Pattern** - Modal dialogs for create/edit operations
+- **Accordion Pattern** - Collapsible sections for hierarchical data display
+- **Side Panel Pattern** - Slide-out panel for inline editing
+
+**Data Flow Pattern**:
+```
+User Action → Component → Composable/Store → API Service → HTTP Client → Backend API
+                                                              ↓
+Response ← Store Update ← Component Update ← UI Render ← JSON
+```
+
+### High-Level Component Tree
 
 ```
 App.vue
 ├── AppLayout.vue
-│   ├── AppTopbar.vue (Menubar navigation)
-│   ├── ApiStatusIndicator.vue
-│   └── router-view
-│       ├── HomeView.vue
-│       │   ├── KpiCards.vue
-│       │   ├── ProjectsTable.vue
-│       │   └── QuickActions.vue
-│       ├── ProjectsListView.vue
-│       ├── ProjectDetailView.vue
-│       │   ├── StepIndicator.vue
-│       │   └── router-view
-│       │       ├── RPIMappingView.vue
-│       │       │   ├── RPIMappingHeader.vue
-│       │       │   ├── RPIMappingToolbar.vue
-│       │       │   ├── RPIMappingTable.vue
-│       │       │   └── RPIMappingPanel.vue
-│       │       └── SourceDetailView.vue
+│   ├── AppTopbar.vue
+│   │   ├── Logo
+│   │   ├── Navigation Menu
+│   │   ├── User Menu (auth state)
+│   │   └── API Status Indicator
+│   └── RouterView
+│       ├── HomeView
+│       │   ├── KpiCards
+│       │   ├── ProjectsTable
+│       │   └── QuickActions
+│       ├── LoginView
+│       ├── RegisterView
+│       ├── ProjectsListView
+│       ├── ProjectDetailView
+│       │   └── Accordion (Sources)
+│       │       └── Accordion (Mapping Tables)
+│       │           └── Accordion (Columns)
+│       ├── SourceDetailView
+│       │   ├── MappingTableSelector
+│       │   ├── MappingColumnSelector
+│       │   └── RPIMappingTable
+│       └── RPIMappingView
+│           ├── RPIMappingHeader
+│           ├── RPIMappingToolbar
+│           ├── RPIMappingPanel (side panel)
+│           └── RPIMappingTable
+└── PrimeVue Toast (global notifications)
 ```
 
 ---
@@ -56,55 +89,86 @@ App.vue
 
 ### Prerequisites
 
-- **Node.js:** Version 18.x or higher (tested with Node 20.x)
-- **Package Manager:** npm (comes with Node.js) or yarn
+- **Node.js**: Version 18+ (tested with 20.x)
+- **Package Manager**: npm 9+ or yarn 1.22+
+- **Browser**: Modern browser with ES2020 support (Chrome 90+, Firefox 88+, Safari 14+)
+- **Backend API**: LayerMap backend service running at configured base URL
 
 ### Local Setup
 
-1. **Clone the repository:**
+#### Step 1: Clone the Repository
 
 ```bash
 git clone <repository-url>
 cd LayerMap
 ```
 
-2. **Install dependencies:**
+#### Step 2: Install Dependencies
 
 ```bash
 npm install
 ```
 
-3. **Configure environment variables:**
-   Create a `.env` file in the project root (already provided with default values):
+This installs all dependencies defined in [`package.json`](package.json):
+- Vue 3 ecosystem (vue, vue-router, pinia)
+- PrimeVue UI components and PrimeIcons
+- Vite build tool and plugins
+- Tailwind CSS with PrimeUI plugin
+- Vitest for testing
+- ESLint and Prettier for code quality
 
-```env
+#### Step 3: Configure Environment
+
+Copy the environment variables from `.env` (already present):
+
+```bash
+# .env
 VITE_API_BASE_URL=http://localhost:8000
 ```
 
-4. **Run development server:**
+The application uses `httpOnly` cookies for authentication, so the backend API must be configured to set cookies properly.
+
+#### Step 4: Run Development Server
 
 ```bash
 npm run dev
 ```
 
-5. **Access the application:**
-   Open `http://localhost:5173` in your browser
+The application will be available at `http://localhost:5173` (or next available port).
 
-### Available Scripts
+#### Step 5: Build for Production
 
-| Script            | Description                              |
-| ----------------- | ---------------------------------------- |
-| `npm run dev`     | Start development server with hot reload |
-| `npm run build`   | Build for production                     |
-| `npm run preview` | Preview production build locally         |
-| `npm run lint`    | Run ESLint with auto-fix                 |
-| `npm run format`  | Format code with Prettier                |
+```bash
+npm run build
+```
+
+Output will be in the `dist/` directory.
+
+#### Step 6: Preview Production Build
+
+```bash
+npm run preview
+```
+
+### Available Scripts Reference
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start development server with hot reload |
+| `npm run build` | Build for production with Vite |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint for code quality checks |
+| `npm run format` | Format code with Prettier |
+| `npm run test` | Run tests in watch mode |
+| `npm run test:run` | Run tests once and exit |
+| `npm run test:ui` | Run tests with Vitest UI |
+| `npm run coverage` | Generate test coverage report |
 
 ### Environment Variables Reference
 
-| Variable            | Required | Default                 | Description                            |
-| ------------------- | -------- | ----------------------- | -------------------------------------- |
-| `VITE_API_BASE_URL` | No       | `http://localhost:8000` | Backend API base URL for HTTP requests |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VITE_API_BASE_URL` | No | `http://localhost:8000` | Base URL for the backend API |
 
 ---
 
@@ -115,201 +179,231 @@ npm run dev
 ```
 LayerMap/
 ├── .env                          # Environment variables (API base URL)
+├── .gitattributes                # Git attributes for line endings
+├── .gitignore                    # Git ignore rules
 ├── index.html                    # HTML entry point
 ├── package.json                  # Dependencies and scripts
-├── vite.config.mjs               # Vite configuration with PrimeVue resolver
-├── tailwind.config.js            # TailwindCSS theme and design tokens
-├── postcss.config.js             # PostCSS configuration (Tailwind + Autoprefixer)
-├── docs/                         # Project documentation
-│   ├── PROJECT_OVERVIEW.md       # High-level project overview
-│   ├── OVERVIEW.md               # Additional overview documentation
-│   ├── DATA_MODEL.md             # Data model documentation
-│   ├── architecture/
-│   │   └── ARCHITECTURE.md       # System architecture documentation
-│   ├── components/
-│   │   └── COMPONENTS.md         # Component documentation
-│   ├── stores/
-│   │   └── STORES.md             # Store documentation
-│   ├── guides/
-│   │   └── DEVELOPMENT.md        # Development guidelines
-│   └── testing/
-│       └── TESTING.md            # Testing documentation
-├── public/
-│   └── favicon.ico               # Favicon
-└── src/
+├── postcss.config.js             # PostCSS configuration
+├── tailwind.config.js            # Tailwind CSS configuration with custom theme
+├── vite.config.mjs               # Vite build configuration
+├── vitest.config.js              # Vitest testing configuration
+├── docs/                         # Documentation directory
+│   └── PROJECT_DOCUMENTATION.md  # This file
+├── public/                       # Static assets served directly
+│   └── favicon.ico               # Site favicon
+└── src/                          # Source code directory
     ├── App.vue                   # Root Vue component
     ├── main.js                   # Application entry point
     ├── api/                      # API service layer
-    │   ├── client.js             # Base HTTP client with interceptors
-    │   ├── projects.js           # API service definitions
-    │   └── projectsWithMock.js   # API with mock data fallback
-    ├── assets/                   # Static assets
-    │   ├── logo.svg              # Project logo
-    │   └── main.css              # Global styles and CSS variables
-    ├── components/               # Reusable Vue components
-    │   ├── common/               # Shared UI components
-    │   │   ├── ApiStatusIndicator.vue    # API connection status indicator
-    │   │   ├── CreateSourceDialog.vue    # Source creation dialog
-    │   │   ├── CreateMappingTableDialog.vue  # Mapping table creation dialog
-    │   │   ├── CreateMappingColumnDialog.vue   # Column creation dialog
-    │   │   └── CreateRPIMappingDialog.vue    # RPI mapping creation dialog
+    │   ├── auth.js               # Authentication API methods
+    │   ├── client.js             # Axios HTTP client with interceptors
+    │   └── projects.js           # Projects and RPI mapping API methods
+    ├── assets/                   # Static assets processed by Vite
+    │   ├── logo.svg              # Application logo
+    │   └── main.css              # Global styles with semantic design tokens
+    ├── components/               # Vue components
+    │   ├── common/               # Reusable UI components
+    │   │   ├── ApiStatusIndicator.vue  # API connection status indicator
+    │   │   ├── CreateMappingColumnDialog.vue  # Column creation dialog
+    │   │   ├── CreateMappingTableDialog.vue   # Table creation dialog
+    │   │   ├── CreateProjectDialog.vue      # Project creation dialog
+    │   │   ├── CreateRPIMappingDialog.vue   # RPI mapping creation dialog
+    │   │   └── CreateSourceDialog.vue       # Source creation dialog
     │   ├── home/                 # Home page components
-    │   │   ├── KpiCards.vue              # KPI cards display
-    │   │   ├── ProjectsTable.vue         # Projects table/card view
-    │   │   └── QuickActions.vue          # Quick action buttons
+    │   │   ├── KpiCards.vue              # KPI metrics cards with animation
+    │   │   ├── ProjectsTable.vue           # Responsive projects table
+    │   │   └── QuickActions.vue            # Quick action buttons
+    │   ├── layout/               # Layout components
+    │   │   ├── AppLayout.vue               # Main application layout
+    │   │   └── AppTopbar.vue                 # Top navigation bar
     │   ├── rpi/                  # RPI mapping components
-    │   │   ├── RPIMappingHeader.vue      # RPI page header
-    │   │   ├── RPIMappingPanel.vue       # RPI form side panel
-    │   │   ├── RPIMappingTable.vue       # RPI data table
-    │   │   └── RPIMappingToolbar.vue     # RPI filter toolbar
+    │   │   ├── RPIMappingHeader.vue          # RPI page header
+    │   │   ├── RPIMappingPanel.vue           # Side panel for RPI editing
+    │   │   ├── RPIMappingTable.vue           # RPI data table
+    │   │   └── RPIMappingToolbar.vue         # RPI filter toolbar
     │   └── workflow/             # Workflow components
-    │       └── StepIndicator.vue         # Multi-step workflow indicator
-    ├── composables/              # Reusable composition functions
-    │   ├── useApiStatus.js       # API availability checking
-    │   ├── useProject.js         # Project data loading helper
-    │   ├── useRPIFilters.js      # RPI filtering and pagination
-    │   └── useRPIMappingForm.js  # RPI form state management
-    ├── constants/                # Application constants
-    │   ├── resources.js          # Source types, column data types
-    │   ├── rpi.js                # RPI form options and empty state
-    │   └── workflow.js           # Workflow steps and statuses
-    ├── data/                     # Mock data for development
-    │   └── mock.js               # Mock projects and RPI data
-    ├── layout/                   # Layout components
-    │   ├── AppLayout.vue         # Main application layout
-    │   └── AppTopbar.vue         # Top navigation bar
+    │       └── StepIndicator.vue               # Multi-step process indicator
     ├── router/                   # Vue Router configuration
-    │   └── index.js              # Route definitions
-    ├── stores/                   # Pinia stores
-    │   ├── projects.js           # Project, source, table, column, RPI state
-    │   └── workflow.js           # Workflow state management
-    └── utils/                    # Utility functions
-        ├── caseConverter.js      # camelCase ↔ snake_case conversion
-        ├── format.js             # Date and number formatting
-        ├── mapping.js            # Mapping helper functions
-        └── status.js             # Status label and severity helpers
+    │   └── index.js              # Route definitions and guards
+    ├── stores/                   # Pinia state management
+    │   ├── auth.js               # Authentication store
+    │   ├── projects.js           # Projects and RPI data store
+    │   └── workflow.js           # Project creation workflow store
+    ├── utils/                    # Utility functions
+    │   ├── format.js             # Date and number formatting
+    │   ├── mapping.js            # RPI mapping helpers
+    │   └── status.js             # Status badge helpers
+    └── views/                    # Page view components
+        ├── HomeView.vue          # Home dashboard
+        ├── LoginView.vue         # Login page
+        ├── RegisterView.vue      # Registration page
+        ├── ProjectDetailView.vue # Project details page
+        ├── ProjectsListView.vue  # Projects list page
+        ├── RPIMappingView.vue    # RPI mapping page
+        └── SourceDetailView.vue  # Source details page
 ```
 
-### Key Files and Responsibilities
+### Key Files and Their Responsibility
 
-| File                                                           | Responsibility                                                        |
-| -------------------------------------------------------------- | --------------------------------------------------------------------- |
-| [`src/main.js`](src/main.js:1)                                 | Application bootstrap, plugin registrations (Pinia, Router, PrimeVue) |
-| [`src/App.vue`](src/App.vue:1)                                 | Root Vue component (minimal wrapper)                                  |
-| [`src/router/index.js`](src/router/index.js:1)                 | Route definitions and navigation guards                               |
-| [`src/stores/projects.js`](src/stores/projects.js:1)           | CRUD operations for projects, sources, tables, columns, RPI mappings  |
-| [`src/stores/workflow.js`](src/stores/workflow.js:1)           | Workflow state management with localStorage persistence               |
-| [`src/api/client.js`](src/api/client.js:1)                     | Base HTTP client with error handling and key conversion               |
-| [`src/api/projectsWithMock.js`](src/api/projectsWithMock.js:1) | API services with automatic mock data fallback                        |
-| [`src/assets/main.css`](src/assets/main.css:1)                 | Global CSS variables, theme configuration, PrimeVue overrides         |
+| File | Responsibility |
+|------|----------------|
+| [`src/main.js`](src/main.js) | Application entry point, initializes Vue app, Pinia, router, PrimeVue |
+| [`src/App.vue`](src/App.vue) | Root component, sets up global toast and clears auth token on mount |
+| [`src/router/index.js`](src/router/index.js) | Route definitions, navigation guards, authentication logic |
+| [`src/api/client.js`](src/api/client.js) | Axios HTTP client with interceptors for auth and error handling |
+| [`src/api/auth.js`](src/api/auth.js) | Authentication API methods (login, register, getMe, logout) |
+| [`src/api/projects.js`](src/api/projects.js) | Projects, sources, tables, columns, RPI mappings API methods |
+| [`src/stores/auth.js`](src/stores/auth.js) | Authentication state, user data, login/logout actions |
+| [`src/stores/projects.js`](src/stores/projects.js) | Projects, sources, tables, columns, RPI mappings CRUD operations |
+| [`src/stores/workflow.js`](src/stores/workflow.js) | Project creation workflow state and validation |
+| [`src/assets/main.css`](src/assets/main.css) | Global styles, semantic design tokens, dark mode support |
+| [`tailwind.config.js`](tailwind.config.js) | Tailwind CSS configuration with custom colors and theme |
+| [`vite.config.mjs`](vite.config.mjs) | Vite build configuration with plugins |
+| [`vitest.config.js`](vitest.config.js) | Vitest testing configuration with setup file |
 
 ---
 
 ## 4. Routing Reference
 
+### `/login` — Login Page
+
+**Component**: [`src/views/LoginView.vue`](src/views/LoginView.vue:1)
+
+**Description**: User authentication page with email and password form. Redirects authenticated users to home page.
+
+**Auth required**: No
+
+**Route params**: None
+
+**Query params**:
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `redirect` | string | - | Redirect URL after successful login |
+
+**Guards / middleware**: `requiresAuth: false`
+
+---
+
+### `/register` — Registration Page
+
+**Component**: [`src/views/RegisterView.vue`](src/views/RegisterView.vue:1)
+
+**Description**: User registration page with full_name, email, and password form. Auto-logs in user after successful registration.
+
+**Auth required**: No
+
+**Route params**: None
+
+**Query params**: None
+
+**Guards / middleware**: `requiresAuth: false`
+
+---
+
 ### `/` — Home Dashboard
 
-**Component:** [`HomeView.vue`](src/views/HomeView.vue:1)
+**Component**: [`src/views/HomeView.vue`](src/views/HomeView.vue:1)
 
-**Description:** Dashboard displaying KPI cards (projects count, sources count, RPI records), projects table/card view, and quick action buttons.
+**Description**: Main dashboard showing KPI cards (total projects, sources, RPI mappings), recent projects table, and quick action buttons.
 
-**Auth required:** No
+**Auth required**: Yes
 
-**Route params:** None
+**Route params**: None
 
-**Query params:** None
+**Query params**: None
 
-**Guards / middleware:** None
-
----
-
-### `/projects` — Projects Redirect
-
-**Component:** Redirect to `/projects/list`
-
-**Description:** Redirects to the projects list page.
-
-**Auth required:** No
-
-**Route params:** None
-
-**Query params:** None
-
-**Guards / middleware:** None
+**Guards / middleware**: `requiresAuth: true`
 
 ---
 
-### `/projects/list` — Projects List
+### `/projects` — Projects List
 
-**Component:** [`ProjectsListView.vue`](src/views/ProjectsListView.vue:1)
+**Component**: [`src/views/ProjectsListView.vue`](src/views/ProjectsListView.vue:1)
 
-**Description:** Card-based listing of all projects with status badges and quick actions.
+**Description**: Paginated list of all projects with search, filter by status, and sorting options.
 
-**Auth required:** No
+**Auth required**: Yes
 
-**Route params:** None
+**Route params**: None
 
-**Query params:** None
+**Query params**:
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `status` | string | - | Filter by project status (draft, active, archived) |
+| `search` | string | - | Search by project name |
+| `page` | number | 1 | Page number |
+| `size` | number | 10 | Items per page |
+| `sort_by` | string | created_at | Sort field |
+| `sort_dir` | string | asc | Sort direction (asc, desc) |
 
-**Guards / middleware:** None
+**Guards / middleware**: `requiresAuth: true`
 
 ---
 
-### `/projects/:id` — Project Detail
+### `/projects/:id` — Project Details
 
-**Component:** [`ProjectDetailView.vue`](src/views/ProjectDetailView.vue:1)
+**Component**: [`src/views/ProjectDetailView.vue`](src/views/ProjectDetailView.vue:1)
 
-**Description:** Detailed view of a single project showing sources, mapping tables, and RPI mappings. Includes workflow step indicator.
+**Description**: Detailed view of a single project with accordion sections for sources, mapping tables, and columns.
 
-**Auth required:** No
+**Auth required**: Yes
 
-**Route params:**
+**Route params**:
 | Param | Type | Description |
 |-------|------|-------------|
-| `id` | String | Project ID |
+| `id` | string | Project ID |
 
-**Query params:** None
+**Query params**: None
 
-**Guards / middleware:** None
-
----
-
-### `/projects/:id/mapping` — RPI Mapping Editor
-
-**Component:** [`RPIMappingView.vue`](src/views/RPIMappingView.vue:1)
-
-**Description:** RPI mapping editor with data table, filter toolbar, and side panel form for adding/editing RPI records.
-
-**Auth required:** No
-
-**Route params:**
-| Param | Type | Description |
-|-------|------|-------------|
-| `id` | String | Project ID |
-
-**Query params:** None
-
-**Guards / middleware:** None
+**Guards / middleware**: `requiresAuth: true`
 
 ---
 
-### `/projects/:id/sources/:sourceId` — Source Detail
+### `/projects/:id/mapping` — RPI Mapping
 
-**Component:** [`SourceDetailView.vue`](src/views/SourceDetailView.vue:1)
+**Component**: [`src/views/RPIMappingView.vue`](src/views/RPIMappingView.vue:1)
 
-**Description:** Detailed view of a data source showing its columns and mapping configuration.
+**Description**: RPI mapping management page with filters, search, pagination, and side panel for creating/editing RPI records.
 
-**Auth required:** No
+**Auth required**: Yes
 
-**Route params:**
+**Route params**:
 | Param | Type | Description |
 |-------|------|-------------|
-| `id` | String | Project ID |
-| `sourceId` | String | Source ID |
+| `id` | string | Project ID |
 
-**Query params:** None
+**Query params**:
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `search` | string | - | Search by RPI name |
+| `status` | string | - | Filter by status (draft, review, approved) |
+| `ownership` | string | - | Filter by ownership (internal, external) |
+| `measurement_type` | string | - | Filter by measurement type |
+| `calculated_type` | string | - | Filter by calculated type |
+| `page` | number | 1 | Page number |
+| `pageSize` | number | 10 | Items per page |
 
-**Guards / middleware:** None
+**Guards / middleware**: `requiresAuth: true`
+
+---
+
+### `/projects/:id/sources/:sourceId` — Source Details
+
+**Component**: [`src/views/SourceDetailView.vue`](src/views/SourceDetailView.vue:1)
+
+**Description**: Detailed view of a data source with mapping tables and columns. Allows creating mapping tables and RPI mappings.
+
+**Auth required**: Yes
+
+**Route params**:
+| Param | Type | Description |
+|-------|------|-------------|
+| `id` | string | Project ID |
+| `sourceId` | string | Source ID |
+
+**Query params**: None
+
+**Guards / middleware**: `requiresAuth: true`
 
 ---
 
@@ -317,132 +411,181 @@ LayerMap/
 
 ### HomeView.vue
 
-**Path:** `src/views/HomeView.vue`
+**Path**: [`src/views/HomeView.vue`](src/views/HomeView.vue:1)
 
-**Purpose:** Dashboard page displaying project statistics and quick navigation.
+**Purpose**: Dashboard page displaying project KPIs and quick access to recent projects.
 
-**Key data:**
+**Key data**:
+- Total projects count
+- Total sources count
+- Total RPI mappings count
+- Recent projects list (last 5)
 
-- Projects count, sources count, RPI records count
-- Last update date
-- List of projects with status badges
+**API endpoints used**:
+- `GET /projects/kpi` — Fetches KPI metrics
+- `GET /projects/recent?limit=5` — Fetches recent projects
 
-**API endpoints:**
+**Emitted events**: None
 
-- `GET /projects` — Fetch all projects
+**Global state mutations**:
+- `useProjectsStore().loadKpi()` — Loads KPI data
+- `useProjectsStore().loadRecentProjects(5)` — Loads recent projects
 
-**Emitted events:** None
+---
 
-**Global state mutations:** Reads from `useProjectsStore()`
+### LoginView.vue
+
+**Path**: [`src/views/LoginView.vue`](src/views/LoginView.vue:1)
+
+**Purpose**: User authentication page with email and password form.
+
+**Key data**:
+- Email input (required, email format)
+- Password input (required, min 8 characters)
+- Loading state during login
+- Error messages from API
+
+**API endpoints used**:
+- `POST /auth/jwt/login` — Authenticates user
+
+**Emitted events**: None
+
+**Global state mutations**:
+- `useAuthStore().login({ email, password })` — Initiates login
+
+---
+
+### RegisterView.vue
+
+**Path**: [`src/views/RegisterView.vue`](src/views/RegisterView.vue:1)
+
+**Purpose**: User registration page with auto-login after successful registration.
+
+**Key data**:
+- Full name input (required)
+- Email input (required, email format)
+- Password input (required, min 8 characters)
+- Loading state during registration
+- Error messages (409 for duplicate email)
+
+**API endpoints used**:
+- `POST /auth/register` — Registers new user
+
+**Emitted events**: None
+
+**Global state mutations**:
+- `useAuthStore().login({ email, password })` — Auto-logs in after registration
 
 ---
 
 ### ProjectsListView.vue
 
-**Path:** `src/views/ProjectsListView.vue`
+**Path**: [`src/views/ProjectsListView.vue`](src/views/ProjectsListView.vue:1)
 
-**Purpose:** Card-based listing of all projects.
+**Purpose**: Paginated list of all projects with search, filter, and sort capabilities.
 
-**Key data:**
+**Key data**:
+- Projects list with pagination
+- Search query
+- Status filter
+- Sort options
+- Total count
 
-- Project cards with name, description, status
-- RPI status counts (approved, review, draft)
+**API endpoints used**:
+- `GET /projects?status=&search=&page=&size=&sort_by=&sort_dir=` — Fetches filtered projects
 
-**API endpoints:**
+**Emitted events**: None
 
-- `GET /projects` — Fetch all projects
-
-**Emitted events:** None
-
-**Global state mutations:** Reads from `useProjectsStore()`
+**Global state mutations**:
+- `useProjectsStore().loadProjects(filters)` — Loads projects with filters
 
 ---
 
 ### ProjectDetailView.vue
 
-**Path:** `src/views/ProjectDetailView.vue`
+**Path**: [`src/views/ProjectDetailView.vue`](src/views/ProjectDetailView.vue:1)
 
-**Purpose:** Detailed project view with sources, mapping tables, and RPI mappings.
+**Purpose**: Detailed view of a single project with collapsible sections for sources, tables, and columns.
 
-**Key data:**
+**Key data**:
+- Project details (name, status, created_at, updated_at)
+- Sources list with count
+- Mapping tables per source
+- Columns per table
 
-- Project details (name, description, status)
-- Sources list with row counts
-- Mapping tables with columns
-- RPI mappings table
+**API endpoints used**:
+- `GET /projects/:id` — Fetches project details
+- `GET /projects/:id/sources` — Fetches sources
+- `GET /projects/:id/sources/:sourceId/mapping-tables` — Fetches tables
+- `GET /projects/:id/sources/:sourceId/mapping-tables/:tableId/columns` — Fetches columns
 
-**API endpoints:**
+**Emitted events**: None
 
-- `GET /projects/:id` — Fetch project details
-- `GET /projects/:id/sources` — Fetch project sources
-- `GET /projects/:id/mapping-tables` — Fetch mapping tables
-- `GET /projects/:id/rpi-mappings` — Fetch RPI mappings
-
-**Emitted events:**
-
-- `source:create` — Create new source
-- `table:create` — Create new mapping table
-- `column:create` — Create new column
-- `rpi:create` — Create new RPI mapping
-- `rpi:update` — Update RPI mapping
-- `rpi:delete` — Delete RPI mapping
-
-**Global state mutations:** Reads/writes to `useProjectsStore()`
-
----
-
-### RPIMappingView.vue
-
-**Path:** `src/views/RPIMappingView.vue`
-
-**Purpose:** RPI mapping editor with table, filters, and form panel.
-
-**Key data:**
-
-- RPI records with filters (status, ownership, measurement type)
-- Pagination state
-- Active RPI record for editing
-
-**API endpoints:**
-
-- `GET /projects/:id/rpi-mappings` — Fetch RPI mappings
-- `POST /projects/:id/rpi-mappings` — Create RPI mapping
-- `PUT /rpi-mappings/:id` — Update RPI mapping
-- `DELETE /rpi-mappings/:id` — Delete RPI mapping
-
-**Emitted events:** None
-
-**Global state mutations:** Reads/writes to `useProjectsStore()`, uses `useRPIFilters()` composable
+**Global state mutations**:
+- `useProjectsStore().loadProject(id)` — Loads project
+- `useProjectsStore().loadSources(id)` — Loads sources
+- `useProjectsStore().loadTables(projectId, sourceId)` — Loads tables
+- `useProjectsStore().loadColumns(projectId, sourceId, tableId)` — Loads columns
 
 ---
 
 ### SourceDetailView.vue
 
-**Path:** `src/views/SourceDetailView.vue`
+**Path**: [`src/views/SourceDetailView.vue`](src/views/SourceDetailView.vue:1)
 
-**Purpose:** Source detail view with column management.
+**Purpose**: Detailed view of a data source with mapping tables and RPI mapping capabilities.
 
-**Key data:**
+**Key data**:
+- Source details (name, type, description)
+- Mapping tables list
+- Columns per table
+- RPI mappings for selected table/column
 
-- Source details (name, type, row count)
-- Mapping columns with types and data types
-- RPI mappings linked to source
+**API endpoints used**:
+- `GET /projects/:projectId/sources/:sourceId` — Fetches source details
+- `GET /projects/:projectId/sources/:sourceId/mapping-tables` — Fetches tables
+- `GET /projects/:projectId/sources/:sourceId/mapping-tables/:tableId/columns` — Fetches columns
+- `GET /projects/:projectId/rpi-mappings?table_id=&column_id=` — Fetches RPI mappings
 
-**API endpoints:**
+**Emitted events**: None
 
-- `GET /projects/:id/sources/:sourceId` — Fetch source details
-- `GET /projects/:id/mapping-tables` — Fetch mapping tables
-- `POST /projects/:id/mapping-tables/:tableId/columns` — Create column
-- `PUT /mapping-columns/:id` — Update column
-- `DELETE /mapping-columns/:id` — Delete column
+**Global state mutations**:
+- `useProjectsStore().loadSource(projectId, sourceId)` — Loads source
+- `useProjectsStore().loadTables(projectId, sourceId)` — Loads tables
+- `useProjectsStore().loadColumns(projectId, sourceId, tableId)` — Loads columns
+- `useProjectsStore().loadRPIMappings(projectId, filters)` — Loads RPI mappings
 
-**Emitted events:**
+---
 
-- `column:create` — Create new column
-- `column:update` — Update column
-- `column:delete` — Delete column
+### RPIMappingView.vue
 
-**Global state mutations:** Reads/writes to `useProjectsStore()`
+**Path**: [`src/views/RPIMappingView.vue`](src/views/RPIMappingView.vue:1)
+
+**Purpose**: RPI mapping management page with comprehensive filtering, search, pagination, and inline editing.
+
+**Key data**:
+- RPI mappings list with pagination
+- Search query
+- Status filter (draft, review, approved)
+- Ownership filter (internal, external)
+- Measurement type filter
+- Calculated type filter
+- Quick filter counts (approved, review, draft)
+- Side panel for add/edit operations
+
+**API endpoints used**:
+- `GET /projects/:projectId/rpi-mappings?search=&status=&ownership=&measurement_type=&is_calculated=&page=&size=` — Fetches filtered RPI mappings
+- `POST /projects/:projectId/rpi-mappings` — Creates RPI mapping
+- `PATCH /projects/:projectId/rpi-mappings/:id` — Updates RPI mapping
+- `DELETE /projects/:projectId/rpi-mappings/:id` — Deletes RPI mapping
+
+**Emitted events**: None
+
+**Global state mutations**:
+- `useProjectsStore().loadRPIMappings(projectId, filters)` — Loads RPI mappings
+- `useProjectsStore().createRPIMapping(projectId, data)` — Creates RPI
+- `useProjectsStore().updateRPIMapping(projectId, id, data)` — Updates RPI
+- `useProjectsStore().deleteRPIMapping(projectId, id)` — Deletes RPI
 
 ---
 
@@ -450,53 +593,66 @@ LayerMap/
 
 ### ApiStatusIndicator.vue
 
-**Path:** `src/components/common/ApiStatusIndicator.vue`
+**Path**: [`src/components/common/ApiStatusIndicator.vue`](src/components/common/ApiStatusIndicator.vue:1)
 
-**Description:** Displays API connection status with color-coded indicator (green = connected, yellow = checking, red = disconnected). Includes refresh button.
+**Description**: Displays the API connection status with color-coded indicator and health check.
 
-**Props:** None
+**Props**:
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| - | - | - | - | Uses composable `useApiStatus()` internally |
 
-**Emits:** None
+**Emits**:
+| Event | Payload Type | Description |
+|-------|--------------|-------------|
+| - | - | - |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| default | Custom content when API is unavailable |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <ApiStatusIndicator />
 ```
 
 ---
 
-### CreateSourceDialog.vue
+### CreateMappingColumnDialog.vue
 
-**Path:** `src/components/common/CreateSourceDialog.vue`
+**Path**: [`src/components/common/CreateMappingColumnDialog.vue`](src/components/common/CreateMappingColumnDialog.vue:1)
 
-**Description:** Modal dialog for creating a new data source.
+**Description**: Dialog for creating or editing a mapping table column with validation.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `modelValue` | Boolean | No | `false` | Dialog visibility |
-| `projectId` | String\|Number | Yes | — | Project ID |
-| `sources` | Array | No | `[]` | List of existing sources |
+| `projectId` | string | Yes | - | Project ID |
+| `sourceId` | string | Yes | - | Source ID |
+| `tableId` | string | Yes | - | Table ID |
+| `editingColumn` | object | No | null | Column object for edit mode |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `update:modelValue` | Boolean | Dialog visibility change |
-| `create` | Object | New source data with `project_id` |
+| `saved` | object | Saved column data |
+| `update:modelValue` | boolean | Dialog visibility |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
-<CreateSourceDialog
-  v-model="showSourceDialog"
-  :project-id="projectId"
-  :sources="sources"
-  @create="handleCreateSource"
+<CreateMappingColumnDialog
+  v-model="showColumnDialog"
+  :projectId="projectId"
+  :sourceId="sourceId"
+  :tableId="tableId"
+  :editingColumn="editingColumn"
+  @saved="handleColumnSaved"
 />
 ```
 
@@ -504,103 +660,137 @@ LayerMap/
 
 ### CreateMappingTableDialog.vue
 
-**Path:** `src/components/common/CreateMappingTableDialog.vue`
+**Path**: [`src/components/common/CreateMappingTableDialog.vue`](src/components/common/CreateMappingTableDialog.vue:1)
 
-**Description:** Modal dialog for creating a new mapping table.
+**Description**: Dialog for creating a new mapping table with source selection.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `modelValue` | Boolean | No | `false` | Dialog visibility |
-| `projectId` | String\|Number | Yes | — | Project ID |
-| `sources` | Array | No | `[]` | List of sources for dropdown |
+| `projectId` | string | Yes | - | Project ID |
+| `sourceId` | string | Yes | - | Source ID |
+| `editingTable` | object | No | null | Table object for edit mode |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `update:modelValue` | Boolean | Dialog visibility change |
-| `create` | Object | New table data with `project_id` |
+| `saved` | object | Saved table data |
+| `update:modelValue` | boolean | Dialog visibility |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <CreateMappingTableDialog
   v-model="showTableDialog"
-  :project-id="projectId"
-  :sources="sources"
-  @create="handleCreateTable"
+  :projectId="projectId"
+  :sourceId="sourceId"
+  :editingTable="editingTable"
+  @saved="handleTableSaved"
 />
 ```
 
 ---
 
-### CreateMappingColumnDialog.vue
+### CreateProjectDialog.vue
 
-**Path:** `src/components/common/CreateMappingColumnDialog.vue`
+**Path**: [`src/components/common/CreateProjectDialog.vue`](src/components/common/CreateProjectDialog.vue:1)
 
-**Description:** Modal dialog for creating a new mapping column. Supports basic and calculated columns.
+**Description**: Dialog for creating a new project with name and description.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `modelValue` | Boolean | No | `false` | Dialog visibility |
-| `projectId` | String\|Number | Yes | — | Project ID |
-| `tableId` | String\|Number | No | `null` | Mapping table ID |
+| `modelValue` | boolean | Yes | - | Dialog visibility |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `update:modelValue` | Boolean | Dialog visibility change |
-| `create` | Object | New column data with `mapping_table_id` |
+| `saved` | object | Saved project data |
+| `update:modelValue` | boolean | Dialog visibility |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
-<CreateMappingColumnDialog
-  v-model="showColumnDialog"
-  :project-id="projectId"
-  :table-id="tableId"
-  @create="handleCreateColumn"
-/>
+<CreateProjectDialog v-model="showProjectDialog" @saved="handleProjectSaved" />
 ```
 
 ---
 
 ### CreateRPIMappingDialog.vue
 
-**Path:** `src/components/common/CreateRPIMappingDialog.vue`
+**Path**: [`src/components/common/CreateRPIMappingDialog.vue`](src/components/common/CreateRPIMappingDialog.vue:1)
 
-**Description:** Modal dialog for creating a new RPI mapping record.
+**Description**: Comprehensive dialog for creating/editing RPI mappings with extensive validation and source column linking.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `modelValue` | Boolean | No | `false` | Dialog visibility |
-| `projectId` | String\|Number | Yes | — | Project ID |
-| `rpiMappings` | Array | No | `[]` | Existing RPI mappings (for number auto-increment) |
-| `columns` | Array | No | `[]` | Available columns for source column selection |
+| `projectId` | string | Yes | - | Project ID |
+| `editingRpi` | object | No | null | RPI object for edit mode |
+| `sourceColumnId` | string | No | null | Pre-select source column |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `update:modelValue` | Boolean | Dialog visibility change |
-| `create` | Object | New RPI mapping data with `project_id` |
+| `saved` | object | Saved RPI data |
+| `update:modelValue` | boolean | Dialog visibility |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <CreateRPIMappingDialog
-  v-model="showRpiDialog"
-  :project-id="projectId"
-  :rpi-mappings="rpiMappings"
-  :columns="columns"
-  @create="handleCreateRpi"
+  v-model="showRPIDialog"
+  :projectId="projectId"
+  :editingRpi="editingRpi"
+  :sourceColumnId="selectedColumnId"
+  @saved="handleRPISaved"
+/>
+```
+
+---
+
+### CreateSourceDialog.vue
+
+**Path**: [`src/components/common/CreateSourceDialog.vue`](src/components/common/CreateSourceDialog.vue:1)
+
+**Description**: Dialog for creating a new data source with name, type, and description.
+
+**Props**:
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `projectId` | string | Yes | - | Project ID |
+| `editingSource` | object | No | null | Source object for edit mode |
+
+**Emits**:
+| Event | Payload Type | Description |
+|-------|--------------|-------------|
+| `saved` | object | Saved source data |
+| `update:modelValue` | boolean | Dialog visibility |
+
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
+
+**Usage example**:
+```vue
+<CreateSourceDialog
+  v-model="showSourceDialog"
+  :projectId="projectId"
+  :editingSource="editingSource"
+  @saved="handleSourceSaved"
 />
 ```
 
@@ -608,101 +798,129 @@ LayerMap/
 
 ### KpiCards.vue
 
-**Path:** `src/components/home/KpiCards.vue`
+**Path**: [`src/components/home/KpiCards.vue`](src/components/home/KpiCards.vue:1)
 
-**Description:** Displays animated KPI cards for projects count, sources count, RPI records, and last update date.
+**Description**: Displays KPI metrics (total projects, sources, RPI mappings) with animated number transitions.
 
-**Props:** None
+**Props**:
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `totalProjects` | number | Yes | - | Total projects count |
+| `totalSources` | number | Yes | - | Total sources count |
+| `totalRpi` | number | Yes | - | Total RPI mappings count |
 
-**Emits:** None
+**Emits**:
+| Event | Payload Type | Description |
+|-------|--------------|-------------|
+| - | - | - |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
-<KpiCards />
+<KpiCards
+  :totalProjects="store.totalProjects"
+  :totalSources="store.totalSources"
+  :totalRpi="store.totalRpi"
+/>
 ```
 
 ---
 
 ### ProjectsTable.vue
 
-**Path:** `src/components/home/ProjectsTable.vue`
+**Path**: [`src/components/home/ProjectsTable.vue`](src/components/home/ProjectsTable.vue:1)
 
-**Description:** Responsive projects display — cards on mobile, DataTable on desktop.
+**Description**: Responsive projects table that switches between card and table layout based on screen size.
 
-**Props:** None
+**Props**:
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `projects` | array | Yes | - | Projects list |
+| `loading` | boolean | Yes | - | Loading state |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `row-click` | Object | Row click event with `data` |
+| `view-project` | string | Project ID to view |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
-<ProjectsTable @row-click="handleProjectClick" />
+<ProjectsTable
+  :projects="recentProjects"
+  :loading="loading"
+  @view-project="navigateToProject"
+/>
 ```
 
 ---
 
 ### QuickActions.vue
 
-**Path:** `src/components/home/QuickActions.vue`
+**Path**: [`src/components/home/QuickActions.vue`](src/components/home/QuickActions.vue:1)
 
-**Description:** Grid of quick action buttons for common tasks.
+**Description**: Quick action buttons for creating projects and navigating to projects list.
 
-**Props:** None
+**Props**:
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| - | - | - | - | - |
 
-**Emits:** None
+**Emits**:
+| Event | Payload Type | Description |
+|-------|--------------|-------------|
+| `create-project` | - | Trigger project creation |
+| `view-projects` | - | Navigate to projects list |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
-<QuickActions />
+<QuickActions
+  @create-project="showProjectDialog = true"
+  @view-projects="router.push('/projects')"
+/>
 ```
 
 ---
 
 ### RPIMappingHeader.vue
 
-**Path:** `src/components/rpi/RPIMappingHeader.vue`
+**Path**: [`src/components/rpi/RPIMappingHeader.vue`](src/components/rpi/RPIMappingHeader.vue:1)
 
-**Description:** Sticky header for RPI mapping page with project name, record counts, and add button.
+**Description**: Page header with title, description, and add RPI button.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `projectName` | String | Yes | — | Project name |
-| `totalCount` | Number | Yes | — | Total RPI records |
-| `approvedCount` | Number | Yes | — | Approved records count |
-| `reviewCount` | Number | Yes | — | Review records count |
-| `draftCount` | Number | Yes | — | Draft records count |
+| `projectId` | string | Yes | - | Project ID |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `back` | — | Navigate back |
-| `add` | — | Add new RPI record |
+| `add-rpi` | - | Trigger add RPI panel |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <RPIMappingHeader
-  :project-name="projectName"
-  :total-count="totalCount"
-  :approved-count="approvedCount"
-  :review-count="reviewCount"
-  :draft-count="draftCount"
-  @back="handleBack"
-  @add="handleAdd"
+  :projectId="projectId"
+  @add-rpi="openAddPanel"
 />
 ```
 
@@ -710,49 +928,38 @@ LayerMap/
 
 ### RPIMappingPanel.vue
 
-**Path:** `src/components/rpi/RPIMappingPanel.vue`
+**Path**: [`src/components/rpi/RPIMappingPanel.vue`](src/components/rpi/RPIMappingPanel.vue:1)
 
-**Description:** Side panel form for adding/editing RPI records. Includes source selection, field mapping, and validation.
+**Description**: Side panel for adding or editing RPI mappings with form validation.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `panelOpen` | Boolean | No | — | Panel visibility |
-| `panelMode` | String | No | — | 'add' or 'edit' |
-| `form` | Object | No | `{}` | Form data |
-| `formTouched` | Boolean | No | `false` | Form touched state |
-| `projectSources` | Array | No | `[]` | Project sources |
-| `columnOptions` | Array | No | `[]` | Column options for source |
-| `selectedColumn` | Object | No | `null` | Selected column |
-| `selectedSourceObj` | Object | No | `null` | Selected source object |
-| `projectMappingTables` | Array | No | `[]` | Project mapping tables |
+| `projectId` | string | Yes | - | Project ID |
+| `mode` | string | Yes | - | 'add' or 'edit' |
+| `editingRpi` | object | No | null | RPI object for edit mode |
+| `sourceColumnId` | string | No | null | Pre-selected source column |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `close` | — | Close panel |
-| `save` | — | Save form |
-| `delete` | — | Delete record |
-| `source-change` | String | Source name change |
-| `field-change` | Object | Field option change |
+| `close` | - | Close panel |
+| `saved` | object | Saved RPI data |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <RPIMappingPanel
-  v-model:panel-open="panelOpen"
-  v-model:panel-mode="panelMode"
-  v-model:form="form"
-  :form-touched="formTouched"
-  :project-sources="sources"
-  :column-options="columnOptions"
-  :selected-column="selectedColumn"
-  :selected-source-obj="selectedSourceObj"
-  @close="panelOpen = false"
-  @save="handleSave"
-  @delete="handleDelete"
+  :projectId="projectId"
+  :mode="panelMode"
+  :editingRpi="editingRpi"
+  :sourceColumnId="selectedColumnId"
+  @close="closePanel"
+  @saved="handleSave"
 />
 ```
 
@@ -760,48 +967,44 @@ LayerMap/
 
 ### RPIMappingTable.vue
 
-**Path:** `src/components/rpi/RPIMappingTable.vue`
+**Path**: [`src/components/rpi/RPIMappingTable.vue`](src/components/rpi/RPIMappingTable.vue:1)
 
-**Description:** PrimeVue DataTable for RPI records with pagination and selection.
+**Description**: RPI mappings data table with pagination, sorting, and action buttons.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `rows` | Array | Yes | — | RPI records to display |
-| `activeRow` | Object | No | `null` | Currently selected row |
-| `filteredCount` | Number | Yes | — | Total filtered records |
-| `pageFirst` | Number | Yes | — | First row index |
-| `pageSize` | Number | Yes | — | Rows per page |
-| `projectId` | String | Yes | — | Project ID |
-| `mappingTables` | Array | Yes | — | Mapping tables |
-| `sources` | Array | Yes | — | Sources |
+| `rows` | array | Yes | - | RPI rows to display |
+| `totalRecords` | number | Yes | - | Total record count |
+| `pageFirst` | number | Yes | - | Current page index |
+| `pageSize` | number | Yes | - | Items per page |
+| `loading` | boolean | Yes | - | Loading state |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `row-select` | Object | Row selection event |
-| `edit` | Object | Edit event with row data |
-| `page` | Object | Page change event |
-| `reset-filters` | — | Reset filters |
+| `edit` | object | RPI row to edit |
+| `delete` | object | RPI row to delete |
+| `page` | object | Page change event |
+| `sort` | object | Sort change event |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <RPIMappingTable
   :rows="paginatedRows"
-  :active-row="activeRow"
-  :filtered-count="filteredCount"
-  :page-first="pageFirst"
-  :page-size="pageSize"
-  :project-id="projectId"
-  :mapping-tables="mappingTables"
-  :sources="sources"
-  @row-select="handleRowSelect"
-  @edit="handleEdit"
-  @page="handlePage"
-  @reset-filters="handleResetFilters"
+  :totalRecords="totalRpi"
+  :pageFirst="pageFirst"
+  :pageSize="pageSize"
+  :loading="loading"
+  @edit="openEditPanel"
+  @delete="confirmDelete"
+  @page="onPage"
+  @sort="onSort"
 />
 ```
 
@@ -809,47 +1012,54 @@ LayerMap/
 
 ### RPIMappingToolbar.vue
 
-**Path:** `src/components/rpi/RPIMappingToolbar.vue`
+**Path**: [`src/components/rpi/RPIMappingToolbar.vue`](src/components/rpi/RPIMappingToolbar.vue:1)
 
-**Description:** Filter toolbar for RPI records with search, status, ownership, and type filters.
+**Description**: Toolbar with search input, status filter, ownership filter, and quick filter counts.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `search` | String | No | `''` | Search query |
-| `selectedStatus` | String\|null | No | `null` | Selected status |
-| `selectedOwnership` | String\|null | No | `null` | Selected ownership |
-| `selectedMeasurementType` | String\|null | No | `null` | Selected measurement type |
-| `selectedCalculatedType` | String\|null | No | `null` | Selected calculated type |
-| `quickFilters` | Array | Yes | — | Quick filter chips |
-| `filteredCount` | Number | Yes | — | Filtered count |
-| `totalRows` | Number | Yes | — | Total rows |
+| `search` | string | Yes | - | Search query |
+| `status` | string | Yes | - | Status filter |
+| `ownership` | string | Yes | - | Ownership filter |
+| `measurementType` | string | Yes | - | Measurement type filter |
+| `calculatedType` | string | Yes | - | Calculated type filter |
+| `approvedCount` | number | Yes | - | Approved count |
+| `reviewCount` | number | Yes | - | Review count |
+| `draftCount` | number | Yes | - | Draft count |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `update:search` | String | Search query change |
-| `update:selectedStatus` | String\|null | Status filter change |
-| `update:selectedOwnership` | String\|null | Ownership filter change |
-| `update:selectedMeasurementType` | String\|null | Measurement type filter change |
-| `update:selectedCalculatedType` | String\|null | Calculated type filter change |
-| `reset` | — | Reset all filters |
+| `search` | string | Search query change |
+| `status` | string | Status filter change |
+| `ownership` | string | Ownership filter change |
+| `measurementType` | string | Measurement type filter change |
+| `calculatedType` | string | Calculated type filter change |
+| `reset` | - | Reset filters |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <RPIMappingToolbar
-  v-model:search="search"
-  v-model:selected-status="selectedStatus"
-  v-model:selected-ownership="selectedOwnership"
-  v-model:selected-measurement-type="selectedMeasurementType"
-  v-model:selected-calculated-type="selectedCalculatedType"
-  :quick-filters="quickFilters"
-  :filtered-count="filteredCount"
-  :total-rows="totalRows"
-  @reset="handleResetFilters"
+  :search="filters.search"
+  :status="filters.status"
+  :ownership="filters.ownership"
+  :measurementType="filters.measurementType"
+  :calculatedType="filters.calculatedType"
+  :approvedCount="approvedCount"
+  :reviewCount="reviewCount"
+  :draftCount="draftCount"
+  @search="filters.search = $event"
+  @status="filters.status = $event"
+  @ownership="filters.ownership = $event"
+  @measurementType="filters.measurementType = $event"
+  @calculatedType="filters.calculatedType = $event"
+  @reset="resetFilters"
 />
 ```
 
@@ -857,32 +1067,31 @@ LayerMap/
 
 ### StepIndicator.vue
 
-**Path:** `src/components/workflow/StepIndicator.vue`
+**Path**: [`src/components/workflow/StepIndicator.vue`](src/components/workflow/StepIndicator.vue:1)
 
-**Description:** Visual indicator for multi-step workflow process with locked/active/completed states.
+**Description**: Visual indicator for multi-step workflow process with step validation.
 
-**Props:**
+**Props**:
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `steps` | Array | Yes | — | Array of step objects with `id`, `label`, `status` |
-| `currentStep` | String | No | `null` | Current active step ID |
-| `locked` | Boolean | No | `false` | Lock navigation |
+| `currentStep` | string | Yes | - | Current step name |
+| `steps` | array | Yes | - | Step definitions with name, title, description |
 
-**Emits:**
+**Emits**:
 | Event | Payload Type | Description |
 |-------|--------------|-------------|
-| `step-click` | Object | Step click event |
+| - | - | - |
 
-**Slots:** None
+**Slots**:
+| Slot | Description |
+|------|-------------|
+| - | - |
 
-**Usage example:**
-
+**Usage example**:
 ```vue
 <StepIndicator
+  :currentStep="workflowStore.currentStep"
   :steps="workflowSteps"
-  :current-step="currentStep"
-  :locked="isLocked"
-  @step-click="handleStepClick"
 />
 ```
 
@@ -890,805 +1099,1060 @@ LayerMap/
 
 ## 7. State Management
 
-### Pinia Stores
+### auth.js
 
-#### projects.js
+**Path**: [`src/stores/auth.js`](src/stores/auth.js:1)
 
-**Purpose:** Manages CRUD operations for projects, sources, mapping tables, columns, and RPI mappings.
+**Purpose**: Manages user authentication state, user data, and login/logout operations.
 
-**State Shape:**
-
+**State shape**:
 ```javascript
 {
-  projects: [],              // Array of project objects
-  sources: {},               // projectId → Array of sources
-  mappingTables: {},         // projectId → Array of tables
-  columns: {},               // projectId → Array of columns
-  rpiMappings: {},           // projectId → Array of RPI mappings
-  lastUpdateDate: '',        // ISO date string
-  apiAvailable: true,        // Backend availability flag
-  apiError: null,            // Last API error message
+  user: null,                    // User object or null
+  isAuthenticated: false,        // Whether user is authenticated
+  isInitialized: false,          // Whether auth has been initialized
+  _loadingPromise: null,         // Internal promise for loadUser
 }
 ```
 
-**Getters / Computed Values:**
+**Getters / Computed values**:
+| Name | Returns | Description |
+|------|---------|-------------|
+| `isAuthenticated` | boolean | True if user is logged in |
 
-- `totalSources` — Total count of all sources across projects
-- `totalTables` — Total count of all mapping tables
-- `totalColumns` — Total count of all columns
-- `totalRpi` — Total count of all RPI mappings
-- `lastUpdateDate` — Most recent update timestamp
+**Actions**:
+| Action | Parameters | Side Effects |
+|--------|------------|--------------|
+| `login` | `{ email, password }` | Calls auth API, loads user, sets isAuthenticated |
+| `loadUser` | None | Fetches /users/me, sets user data or clears on 401 |
+| `logout` | None | Calls logout API, clears user state |
 
-**Actions:**
-
-| Action                               | Parameters                 | Side Effects                                                           |
-| ------------------------------------ | -------------------------- | ---------------------------------------------------------------------- |
-| `loadProjects()`                     | None                       | Fetches all projects, populates sources/tables/columns/RPI per project |
-| `loadProjectData(projectId)`         | `projectId: string`        | Fetches all data for a specific project                                |
-| `createProject(data)`                | `data: object`             | POST to `/projects`, adds to `projects` array                          |
-| `updateProject(id, data)`            | `id: string, data: object` | PUT to `/projects/:id`, updates project                                |
-| `deleteProject(id)`                  | `id: string`               | DELETE to `/projects/:id`, removes from array                          |
-| `createSource(data)`                 | `data: object`             | POST to `/projects/:id/sources`, adds to sources                       |
-| `updateSource(id, data)`             | `id: string, data: object` | PUT to `/sources/:id`, updates source                                  |
-| `deleteSource(id)`                   | `id: string`               | DELETE to `/sources/:id`, removes from sources                         |
-| `createMappingTable(data)`           | `data: object`             | POST to `/projects/:id/mapping-tables`, adds to tables                 |
-| `updateMappingTable(id, data)`       | `id: string, data: object` | PUT to `/mapping-tables/:id`, updates table                            |
-| `deleteMappingTable(id)`             | `id: string`               | DELETE to `/mapping-tables/:id`, removes from tables                   |
-| `createMappingTableColumn(data)`     | `data: object`             | POST to `/mapping-tables/:tableId/columns`, adds to columns            |
-| `updateMappingTableColumn(id, data)` | `id: string, data: object` | PUT to `/mapping-columns/:id`, updates column                          |
-| `deleteMappingTableColumn(id)`       | `id: string`               | DELETE to `/mapping-columns/:id`, removes from columns                 |
-| `createRPIMapping(data)`             | `data: object`             | POST to `/projects/:id/rpi-mappings`, adds to RPI                      |
-| `updateRPIMapping(id, data)`         | `id: string, data: object` | PUT to `/rpi-mappings/:id`, updates RPI                                |
-| `deleteRPIMapping(id)`               | `id: string`               | DELETE to `/rpi-mappings/:id`, removes from RPI                        |
-
-**Usage example:**
-
+**Usage example**:
 ```javascript
-import { useProjectsStore } from "@/stores/projects";
+const store = useAuthStore();
+await store.login({ email: 'user@example.com', password: 'secret' });
+console.log(store.user.full_name);
+await store.logout();
+```
 
+---
+
+### projects.js
+
+**Path**: [`src/stores/projects.js`](src/stores/projects.js:1)
+
+**Purpose**: Main store for managing projects, sources, mapping tables, columns, and RPI mappings with full CRUD operations.
+
+**State shape**:
+```javascript
+{
+  projects: [],                          // List of projects
+  sources: [],                           // List of sources
+  mappingTables: [],                     // List of mapping tables
+  rpiMappings: [],                       // List of RPI mappings
+  loading: false,                        // Loading state
+  error: null,                           // Error message
+  projectKpi: {                          // KPI data
+    total: 0,
+    active: 0,
+    draft: 0,
+    archived: 0,
+  },
+  projectPagination: {                   // Pagination state
+    total: 0,
+    page: 1,
+    size: 10,
+  },
+}
+```
+
+**Getters / Computed values**:
+| Name | Returns | Description |
+|------|---------|-------------|
+| `totalProjects` | number | Total projects count from KPI |
+| `totalSources` | number | Total sources count from KPI |
+| `totalRpi` | number | Total RPI mappings count from KPI |
+| `lastUpdateDate` | string | Last update date from KPI |
+
+**Actions**:
+| Action | Parameters | Side Effects |
+|--------|------------|--------------|
+| `loadKpi` | None | Fetches /projects/kpi, updates KPI state |
+| `loadRecentProjects` | `limit` | Fetches /projects/recent?limit=N |
+| `loadProjects` | `filters` | Fetches /projects with filters, updates pagination |
+| `loadProject` | `projectId` | Fetches /projects/:id, loads sources |
+| `loadSources` | `projectId` | Fetches /projects/:id/sources |
+| `loadTables` | `projectId, sourceId` | Fetches tables for source |
+| `loadColumns` | `projectId, sourceId, tableId` | Fetches columns for table |
+| `loadRPIMappings` | `projectId, filters` | Fetches RPI mappings with filters |
+| `createProject` | `data` | POST /projects, adds to list |
+| `updateProject` | `projectId, data` | PATCH /projects/:id |
+| `createSource` | `projectId, data` | POST /projects/:id/sources |
+| `updateSource` | `projectId, sourceId, data` | PATCH /projects/:id/sources/:id |
+| `createMappingTable` | `projectId, data` | POST /projects/:id/mapping-tables |
+| `updateMappingTable` | `projectId, tableId, data` | PATCH /projects/:id/mapping-tables/:id |
+| `createMappingColumn` | `projectId, sourceId, tableId, data` | POST /projects/:id/sources/:sourceId/mapping-tables/:tableId/columns |
+| `updateMappingTableColumn` | `projectId, tableId, columnId, data` | PATCH /projects/:id/sources/:sourceId/mapping-tables/:tableId/columns/:id |
+| `createRPIMapping` | `projectId, data` | POST /projects/:id/rpi-mappings |
+| `updateRPIMapping` | `projectId, rpiId, data` | PATCH /projects/:id/rpi-mappings/:id |
+| `deleteRPIMapping` | `projectId, rpiId` | DELETE /projects/:id/rpi-mappings/:id |
+| `validateRPIMappingLink` | `rpiMapping` | Validates RPI links to valid source column |
+
+**Usage example**:
+```javascript
 const store = useProjectsStore();
-await store.loadProjects();
-await store.createRPIMapping({
-  number: 1,
-  ownership: "Аналитика",
-  measurement: "Выручка",
-  // ...
-});
+await store.loadKpi();
+console.log(store.totalProjects);
+await store.createProject({ name: 'New Project', description: 'Desc' });
+await store.createRPIMapping(projectId, { rpi_name: 'RPI-001', number: 100 });
 ```
 
 ---
 
-#### workflow.js
+### workflow.js
 
-**Purpose:** Manages workflow state with localStorage persistence.
+**Path**: [`src/stores/workflow.js`](src/stores/workflow.js:1)
 
-**State Shape:**
+**Purpose**: Manages project creation workflow state with step validation and localStorage persistence.
 
+**State shape**:
 ```javascript
 {
-  currentStep: null,         // Current workflow step ID
-  completedSteps: [],        // Array of completed step IDs
-  projectWorkflow: {},       // projectId → workflow state
+  currentStep: 'RPI_FORM',     // Current step: RPI_FORM, TABLES, COLUMNS
+  projectId: null,             // Project ID being created
+  rpiFormComplete: false,      // RPI form completion status
+  tablesComplete: false,       // Tables step completion status
+  columnsComplete: false,      // Columns step completion status
+  isProjectLocked: false,      // Whether project creation is locked
 }
 ```
 
-**Getters / Computed Values:**
+**Getters / Computed values**:
+| Name | Returns | Description |
+|------|---------|-------------|
+| `isProjectLocked` | boolean | True if workflow is incomplete |
 
-- `steps` — Computed array of step objects with status
+**Actions**:
+| Action | Parameters | Side Effects |
+|--------|------------|--------------|
+| `completeRPIForm` | `projectId` | Sets rpiFormComplete, saves to localStorage |
+| `completeTablesStep` | `projectId` | Sets tablesComplete, saves to localStorage |
+| `completeColumnsStep` | `projectId` | Sets columnsComplete, saves to localStorage |
+| `resetWorkflow` | `projectId` | Clears all step flags, removes from localStorage |
 
-**Actions:**
-
-- `setStep(stepId)` — Set current step
-- `completeStep(stepId)` — Mark step as completed
-- `resetWorkflow()` — Reset all workflow state
-- `loadFromStorage()` — Load from localStorage
-- `saveToStorage()` — Save to localStorage
-
-**Usage example:**
-
+**Usage example**:
 ```javascript
-import { useWorkflowStore } from "@/stores/workflow";
-
-const workflow = useWorkflowStore();
-await workflow.loadFromStorage();
-workflow.completeStep("rpi_form");
-workflow.setStep("tables");
+const store = useWorkflowStore();
+await store.completeRPIForm(projectId);
+await store.completeTablesStep(projectId);
+await store.completeColumnsStep(projectId);
+console.log(store.isProjectLocked); // false when complete
 ```
 
 ---
 
-### Composables
+## 8. Composables
 
-#### useProject.js
+### useProject.js
 
-**Purpose:** Helper composable for loading project data.
+**Path**: [`src/composables/useProject.js`](src/composables/useProject.js:1)
 
-**Returns:**
+**Purpose**: Extracts project ID from route and store, provides project data access.
 
+**Parameters**:
+| Name | Type | Description |
+|------|------|-------------|
+| - | - | - |
+
+**Returns**:
 ```javascript
 {
-  project: ref(null),
-  sources: ref([]),
-  tables: ref([]),
-  columns: ref([]),
-  rpiMappings: ref([]),
-  loadProject(projectId)
+  projectId: Ref<string>,    // Project ID from route or store
+  project: Ref<object>,      // Project data from store
 }
 ```
 
-**Usage example:**
-
+**Usage example**:
 ```javascript
-import { useProject } from "@/composables/useProject";
-
-const { project, sources, tables, loadProject } = useProject();
-await loadProject("123");
+const { projectId, project } = useProject();
+console.log(projectId.value);
+console.log(project.value.name);
 ```
 
 ---
 
-#### useRPIMappingForm.js
+### useRPIFilters.js
 
-**Purpose:** Manages RPI form state and validation.
+**Path**: [`src/composables/useRPIFilters.js`](src/composables/useRPIFilters.js:1)
 
-**Returns:**
+**Purpose**: Manages RPI filtering, search, and pagination state with computed filtered results.
 
+**Parameters**:
+| Name | Type | Description |
+|------|------|-------------|
+| `projectId` | Ref<string> | Project ID |
+| `rpiMappings` | Ref<Array> | RPI mappings list from store |
+
+**Returns**:
 ```javascript
 {
-  form: ref(emptyForm),
-  formTouched: ref(false),
-  selectedColumn: ref(null),
-  selectedSourceObj: ref(null),
-  resetForm(),
-  validateRPIMappingLink()
+  filters: {
+    search: Ref<string>,           // Search query
+    status: Ref<string>,           // Status filter
+    ownership: Ref<string>,        // Ownership filter
+    measurementType: Ref<string>,  // Measurement type filter
+    calculatedType: Ref<string>,   // Calculated type filter
+  },
+  pageFirst: Ref<number>,          // Current page index
+  pageSize: Ref<number>,           // Items per page
+  filteredRows: ComputedRef<Array>, // Filtered RPI rows
+  paginatedRows: ComputedRef<Array>, // Paginated RPI rows
+  quickFilters: ComputedRef<object>, // Quick filter counts
+  approvedCount: ComputedRef<number>, // Approved count
+  reviewCount: ComputedRef<number>,   // Review count
+  draftCount: ComputedRef<number>,    // Draft count
+  getFilterParams: Function,          // Get filter params for API
+  resetFilters: Function,             // Reset all filters
+  setQuickFilter: Function,           // Apply quick filter
+  onPage: Function,                   // Handle page change
 }
 ```
 
-**Usage example:**
-
+**Usage example**:
 ```javascript
-import { useRPIMappingForm } from "@/composables/useRPIMappingForm";
+const {
+  filters,
+  pageFirst,
+  pageSize,
+  filteredRows,
+  paginatedRows,
+  approvedCount,
+  getFilterParams,
+  resetFilters,
+  onPage,
+} = useRPIFilters(projectId, rpiMappings);
 
-const { form, formTouched, resetForm, validateRPIMappingLink } =
-  useRPIMappingForm();
-await validateRPIMappingLink();
+const params = getFilterParams();
+// { search: '', status: 'approved', page: 1, size: 10, ... }
 ```
 
 ---
 
-#### useRPIFilters.js
+### useRPIMappingForm.js
 
-**Purpose:** Filtering and pagination for RPI records.
+**Path**: [`src/composables/useRPIMappingForm.js`](src/composables/useRPIMappingForm.js:1)
 
-**Parameters:**
+**Purpose**: Manages RPI mapping form state, validation, and CRUD operations.
 
-- `rows` — Array of RPI records
-- `options` — Optional configuration
+**Parameters**:
+| Name | Type | Description |
+|------|------|-------------|
+| `projectId` | Ref<string> | Project ID |
+| `rpiMappings` | Ref<Array> | RPI mappings list from store |
 
-**Returns:**
-
+**Returns**:
 ```javascript
 {
-  search: ref(''),
-  selectedStatus: ref(null),
-  selectedOwnership: ref(null),
-  selectedMeasurementType: ref(null),
-  selectedCalculatedType: ref(null),
-  pageFirst: ref(0),
-  pageSize: ref(10),
-  filteredRows: computed(...),
-  paginatedRows: computed(...),
-  resetFilters()
+  showPanel: Ref<boolean>,           // Panel visibility
+  panelMode: Ref<'add' | 'edit'>,   // Panel mode
+  editingRpi: Ref<object>,           // RPI being edited
+  selectedColumnId: Ref<string>,     // Selected source column
+  form: Ref<object>,                 // RPI form data
+  formErrors: Ref<object>,           // Form validation errors
+  isSubmitting: Ref<boolean>,        // Submit loading state
+  openAddPanel: Function,            // Open add panel
+  openEditPanel: Function,           // Open edit panel with RPI data
+  closePanel: Function,              // Close panel
+  saveRule: Function,                // Save RPI (create or update)
+  deleteRule: Function,              // Delete RPI with confirmation
+  fillFormFromColumn: Function,      // Pre-fill form from source column
 }
 ```
 
-**Usage example:**
-
+**Usage example**:
 ```javascript
-import { useRPIFilters } from "@/composables/useRPIFilters";
+const {
+  showPanel,
+  panelMode,
+  editingRpi,
+  form,
+  formErrors,
+  openAddPanel,
+  openEditPanel,
+  saveRule,
+  deleteRule,
+  fillFormFromColumn,
+} = useRPIMappingForm(projectId, rpiMappings);
 
-const filters = useRPIFilters(rpiMappings.value, { pageSize: 20 });
-const filtered = filters.filteredRows;
+openAddPanel();
+await saveRule();
+fillFormFromColumn(sourceColumn);
 ```
 
 ---
 
-#### useApiStatus.js
+### useApiStatus.js
 
-**Purpose:** Checks backend availability and provides status.
+**Path**: [`src/composables/useApiStatus.js`](src/composables/useApiStatus.js:1)
 
-**Returns:**
+**Purpose**: Monitors API connection status with periodic health checks.
 
+**Parameters**:
+| Name | Type | Description |
+|------|------|-------------|
+| - | - | - |
+
+**Returns**:
 ```javascript
 {
-  status: ref('checking' \| 'available' \| 'error'),
-  loading: ref(false),
-  available: ref(false),
-  error: ref(null),
-  refresh()
+  loading: Ref<boolean>,         // Health check loading state
+  available: Ref<boolean>,       // API availability status
+  health: Ref<object>,           // Health check response
+  error: Ref<string>,            // Error message
+  checkApiAvailability: Function, // Perform health check
+  refreshStatus: Function,        // Refresh status manually
 }
 ```
 
-**Usage example:**
-
+**Usage example**:
 ```javascript
-import { useApiStatus } from "@/composables/useApiStatus";
+const { loading, available, health, error, refreshStatus } = useApiStatus();
 
-const { status, available, refresh } = useApiStatus();
-await refresh();
+if (!available.value) {
+  console.log('API is unavailable');
+}
+await refreshStatus();
 ```
 
 ---
 
-## 8. API Integration Layer
+## 9. API Integration Layer
 
 ### HTTP Client Setup
 
-**File:** [`src/api/client.js`](src/api/client.js:1)
+**Path**: [`src/api/client.js`](src/api/client.js:1)
 
-**Base URL:** Configured via `VITE_API_BASE_URL` environment variable (default: `http://localhost:8000`)
-
-**Interceptors:**
-
-- **Request:** Converts camelCase keys to snake_case for API compatibility
-- **Response:** Converts snake_case keys to camelCase for application use
-- **Error Handling:** Wraps errors in `ApiError` class with status and message
-
-**Key Conversion:**
-
+**Base Configuration**:
 ```javascript
-// camelCase → snake_case
-{ projectId: '123', rpiMappings: [...] }
-// →
-// { project_id: '123', rpi_mappings: [...] }
-
-// snake_case → camelCase
-{ project_id: '123', rpi_mappings: [...] }
-// →
-// { projectId: '123', rpiMappings: [...] }
-```
-
----
-
-### API Services
-
-#### projectsWithMock.js
-
-**File:** [`src/api/projectsWithMock.js`](src/api/projectsWithMock.js:1)
-
-**Description:** API service with automatic mock data fallback when backend is unavailable.
-
-**Functions:**
-
-| Function                             | Endpoint                                        | Method | Parameters                           | Response Type          |
-| ------------------------------------ | ----------------------------------------------- | ------ | ------------------------------------ | ---------------------- |
-| `getProjects()`                      | `/projects`                                     | GET    | None                                 | `Array<Project>`       |
-| `getProject(id)`                     | `/projects/:id`                                 | GET    | `id: string`                         | `Project`              |
-| `createProject(data)`                | `/projects`                                     | POST   | `data: object`                       | `Project`              |
-| `updateProject(id, data)`            | `/projects/:id`                                 | PUT    | `id: string, data: object`           | `Project`              |
-| `deleteProject(id)`                  | `/projects/:id`                                 | DELETE | `id: string`                         | `void`                 |
-| `getSources(projectId)`              | `/projects/:id/sources`                         | GET    | `projectId: string`                  | `Array<Source>`        |
-| `createSource(data)`                 | `/projects/:id/sources`                         | POST   | `data: object`                       | `Source`               |
-| `updateSource(id, data)`             | `/sources/:id`                                  | PUT    | `id: string, data: object`           | `Source`               |
-| `deleteSource(id)`                   | `/sources/:id`                                  | DELETE | `id: string`                         | `void`                 |
-| `getMappingTables(projectId)`        | `/projects/:id/mapping-tables`                  | GET    | `projectId: string`                  | `Array<MappingTable>`  |
-| `createMappingTable(data)`           | `/projects/:id/mapping-tables`                  | POST   | `data: object`                       | `MappingTable`         |
-| `updateMappingTable(id, data)`       | `/mapping-tables/:id`                           | PUT    | `id: string, data: object`           | `MappingTable`         |
-| `deleteMappingTable(id)`             | `/mapping-tables/:id`                           | DELETE | `id: string`                         | `void`                 |
-| `getColumns(projectId)`              | `/projects/:id/mapping-tables/:tableId/columns` | GET    | `projectId: string, tableId: string` | `Array<MappingColumn>` |
-| `createMappingTableColumn(data)`     | `/mapping-tables/:tableId/columns`              | POST   | `data: object`                       | `MappingColumn`        |
-| `updateMappingTableColumn(id, data)` | `/mapping-columns/:id`                          | PUT    | `id: string, data: object`           | `MappingColumn`        |
-| `deleteMappingTableColumn(id)`       | `/mapping-columns/:id`                          | DELETE | `id: string`                         | `void`                 |
-| `getRpiMappings(projectId)`          | `/projects/:id/rpi-mappings`                    | GET    | `projectId: string`                  | `Array<RPIMapping>`    |
-| `createRPIMapping(data)`             | `/projects/:id/rpi-mappings`                    | POST   | `data: object`                       | `RPIMapping`           |
-| `updateRPIMapping(id, data)`         | `/rpi-mappings/:id`                             | PUT    | `id: string, data: object`           | `RPIMapping`           |
-| `deleteRPIMapping(id)`               | `/rpi-mappings/:id`                             | DELETE | `id: string`                         | `void`                 |
-
-**Error Handling:**
-
-- Catches network errors and returns mock data
-- Logs warnings to console for debugging
-- Sets `apiAvailable` flag in store
-
-**Usage example:**
-
-```javascript
-import { getProjects, createRPIMapping } from "@/api/projects";
-
-const projects = await getProjects();
-const newRpi = await createRPIMapping({
-  project_id: "123",
-  number: 1,
-  // ...
-});
-```
-
----
-
-## 9. UI & Styling
-
-### UI Component Library
-
-**Library:** PrimeVue 4.3.1
-
-**Theme:** Aura (default PrimeVue theme)
-
-**Key Components Used:**
-
-- `Menubar` — Top navigation
-- `Dialog` — Modal dialogs
-- `Button` — Action buttons
-- `InputText` — Text inputs
-- `InputNumber` — Numeric inputs
-- `Textarea` — Multi-line text
-- `Dropdown` — Select dropdowns
-- `Select` — Multi-select / single-select
-- `Checkbox` — Boolean checkboxes
-- `Calendar` — Date picker
-- `DataTable` — Data tables
-- `Column` — Table columns
-- `Paginator` — Pagination controls
-- `Badge` — Status badges
-- `Tag` — Status tags
-- `Card` — Card containers
-
----
-
-### Theme / Design Tokens
-
-**File:** [`src/assets/main.css`](src/assets/main.css:1)
-
-**Primary Colors:**
-
-```css
---primary: #01696f;
---primary-hover: #0c4e54;
---primary-active: #0f3638;
---primary-highlight: #cedcd8;
-```
-
-**Surface Colors:**
-
-```css
---surface-base: #f7f6f2;
---surface-card: #f9f8f5;
---surface-offset: #f3f0ec;
-```
-
-**Content Colors:**
-
-```css
---content-default: #28251d;
---content-muted: #7a7974;
---content-faint: #bab9b4;
-```
-
-**Semantic Colors (PrimeVue variables):**
-
-- `--app-success`, `--app-success-bg`, `--app-success-border`, `--app-success-text`
-- `--app-warning`, `--app-warning-bg`, `--app-warning-border`, `--app-warning-text`
-- `--app-error`, `--app-error-bg`, `--app-error-border`, `--app-error-text`
-- `--app-info`, `--app-info-bg`, `--app-info-border`, `--app-info-text`
-
----
-
-### Global Styles and CSS Architecture
-
-**Approach:** TailwindCSS utility classes with custom CSS variables for semantic colors.
-
-**File Structure:**
-
-- `src/assets/main.css` — Global CSS variables, PrimeVue overrides, custom animations
-- `tailwind.config.js` — Tailwind theme configuration with custom colors
-
-**CSS Architecture:**
-
-- **No BEM** — Uses Tailwind utility classes
-- **No CSS Modules** — Scoped styles only in component `<style scoped>`
-- **No Tailwind JIT** — Uses standard Tailwind with custom config
-
-**Custom Animations:**
-
-```css
-/* Fade animation */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-/* Side panel animation */
-.side-panel-enter-active,
-.side-panel-leave-active {
-  transition: all 0.3s ease;
-}
-
-/* Pulse animation */
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-```
-
----
-
-### Breakpoints and Responsive Strategy
-
-**Tailwind Breakpoints:**
-| Breakpoint | Width | Usage |
-|------------|-------|-------|
-| `sm` | 640px | Small tablets, large phones |
-| `md` | 768px | Tablets, desktop |
-| `lg` | 1024px | Large desktops |
-| `xl` | 1280px | Extra large screens |
-| `2xl` | 1536px | Ultra wide screens |
-
-**Responsive Patterns:**
-
-- **Mobile-first:** Base styles for mobile, `md:` and above for desktop
-- **ProjectsTable:** Cards on mobile (`< 768px`), DataTable on desktop
-- **RPIMappingPanel:** Full width on mobile, sticky side panel on desktop (`md:`)
-- **Grid layouts:** `grid-cols-2` on mobile, `md:grid-cols-4` on desktop
-
----
-
-## 10. Forms & Validation
-
-### Form Libraries
-
-**Approach:** Native Vue forms with PrimeVue components. No external form validation library (e.g., VeeValidate, FormKit) is used.
-
-**Validation Strategy:**
-
-- **Required fields:** Checked via `!form.value.field.trim()`
-- **Conditional validation:** e.g., formula required for calculated columns
-- **Visual feedback:** `p-invalid` class on invalid fields
-- **Error messages:** Small text elements below fields
-
----
-
-### Form Components
-
-#### CreateSourceDialog.vue
-
-**Fields:**
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `name` | String | Yes | `!form.name.trim()` |
-| `description` | String | No | — |
-| `type` | String | Yes | Dropdown selection |
-| `row_count` | Number | No | — |
-| `mapping_table_id` | String\|null | No | — |
-
-**Submission flow:**
-
-1. User fills form
-2. `handleSubmit()` validates required fields
-3. Emits `create` event with form data + `project_id`
-4. Parent component handles API call
-5. Form resets on success
-
----
-
-#### CreateMappingTableDialog.vue
-
-**Fields:**
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `name` | String | Yes | `!form.name.trim()` |
-| `description` | String | No | — |
-| `source_id` | String | Yes | Dropdown selection, `sources.length > 0` |
-
-**Submission flow:**
-
-1. User selects source (required)
-2. User enters table name (required)
-3. `handleSubmit()` validates
-4. Emits `create` event with form data + `project_id`
-
----
-
-#### CreateMappingColumnDialog.vue
-
-**Fields:**
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `name` | String | Yes | `!form.name.trim()` |
-| `type` | String | Yes | Dropdown (`dimension` \| `metric`) |
-| `data_type` | String | Yes | Dropdown (string, integer, number, boolean, date, datetime, text) |
-| `description` | String | No | — |
-| `is_calculated` | Boolean | No | — |
-| `formula` | String | Conditional | Required if `is_calculated === true` |
-
-**Submission flow:**
-
-1. User fills basic fields
-2. User toggles "Расчётная колонка" checkbox
-3. If checked, formula becomes required
-4. `handleSubmit()` validates
-5. Emits `create` event with form data + `mapping_table_id`
-
----
-
-#### CreateRPIMappingDialog.vue
-
-**Fields:**
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `number` | Number | Yes | Auto-incremented |
-| `ownership` | String | Yes | Dropdown selection |
-| `status` | String | Yes | Dropdown (`draft` \| `in_review` \| `approved`) |
-| `block` | String | No | — |
-| `measurement_type` | String | Yes | Dropdown (`Измерение` \| `Метрика`) |
-| `is_calculated` | Boolean | No | — |
-| `formula` | String | Conditional | Required if `is_calculated === true` |
-| `measurement` | String | Yes | `!form.measurement.trim()` |
-| `measurement_description` | String | Yes | `!form.measurement_description.trim()` |
-| `source_report` | String | No | — |
-| `object_field` | String | Yes | `!form.object_field.trim()` |
-| `source_column_id` | String\|null | No | Dropdown selection |
-| `date_added` | String | No | Date picker |
-| `date_removed` | String\|null | No | — |
-| `comment` | String | No | — |
-| `verification_file` | String | No | — |
-
-**Submission flow:**
-
-1. User fills required fields
-2. If "Расчётный показатель" checked, formula becomes required
-3. `handleSubmit()` validates all required fields
-4. Emits `create` event with form data + `project_id`
-
----
-
-## 11. Configuration & Build
-
-### Vite Configuration
-
-**File:** [`vite.config.mjs`](vite.config.mjs:1)
-
-**Highlights:**
-
-```javascript
-export default defineConfig({
-  plugins: [
-    vue(),
-    vueDevTools(),
-    Components({
-      resolvers: [PrimeVueResolver()], // Auto-import PrimeVue components
-    }),
-  ],
-  resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)), // @ alias for src/
-    },
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  withCredentials: true,        // Include cookies in requests
+  headers: {
+    'Content-Type': 'application/json',
   },
 });
 ```
 
-**Aliases:**
+**Request Interceptors**: None configured
 
-- `@` → `./src`
+**Response Interceptors**:
+- **403 Forbidden**: Shows error toast, does not redirect
+- **409 Conflict**: Shows error toast, does not redirect
+- **401 Unauthorized**: Redirects to `/login`
+- **Other errors**: Shows error toast with message
 
-**Plugins:**
+**Error Handling Strategy**:
+```javascript
+// 401 errors trigger redirect to login
+// 403/409 errors show toast notification
+// Other errors show toast with error message
+// Validation errors (422) are handled in components
+```
 
-- `@vitejs/plugin-vue` — Vue SFC support
-- `vite-plugin-vue-devtools` — Vue DevTools integration
-- `unplugin-vue-components` — Auto-import components
-- `@primevue/auto-import-resolver` — PrimeVue component resolver
+### API Service Functions
 
----
+**Path**: [`src/api/projects.js`](src/api/projects.js:1)
 
-### Linting and Formatting
+| Function | Endpoint | Method | Parameters | Response Type |
+|----------|----------|--------|------------|---------------|
+| `getProjects` | `/projects` | GET | `projectId?` | `{ items, total }` |
+| `getProject` | `/projects/:id` | GET | `id` | `Project` |
+| `createProject` | `/projects` | POST | `data` | `Project` |
+| `updateProject` | `/projects/:id` | PATCH | `id, data` | `Project` |
+| `getSources` | `/projects/:id/sources` | GET | `projectId` | `Source[]` |
+| `getSource` | `/projects/:projectId/sources/:id` | GET | `projectId, id` | `Source` |
+| `createSource` | `/projects/:projectId/sources` | POST | `projectId, data` | `Source` |
+| `updateSource` | `/projects/:projectId/sources/:id` | PATCH | `projectId, id, data` | `Source` |
+| `getMappingTables` | `/projects/:projectId/mapping-tables` | GET | `projectId` | `MappingTable[]` |
+| `getMappingTable` | `/projects/:projectId/mapping-tables/:id` | GET | `projectId, id` | `MappingTable` |
+| `createMappingTable` | `/projects/:projectId/mapping-tables` | POST | `projectId, data` | `MappingTable` |
+| `updateMappingTable` | `/projects/:projectId/mapping-tables/:id` | PATCH | `projectId, id, data` | `MappingTable` |
+| `getMappingTableColumns` | `/projects/:projectId/mapping-tables/:id/columns` | GET | `projectId, id` | `MappingColumn[]` |
+| `getMappingTableColumn` | `/projects/:projectId/mapping-tables/:tableId/columns/:id` | GET | `projectId, tableId, id` | `MappingColumn` |
+| `createMappingColumn` | `/projects/:projectId/sources/:sourceId/mapping-tables/:tableId/columns` | POST | `projectId, sourceId, tableId, data` | `MappingColumn` |
+| `updateMappingTableColumn` | `/projects/:projectId/sources/:sourceId/mapping-tables/:tableId/columns/:id` | PATCH | `projectId, sourceId, tableId, id, data` | `MappingColumn` |
+| `getRPIMappings` | `/projects/:projectId/rpi-mappings` | GET | `projectId, filters` | `RPIMapping[]` |
+| `getRPIMapping` | `/projects/:projectId/rpi-mappings/:id` | GET | `projectId, id` | `RPIMapping` |
+| `createRPIMapping` | `/projects/:projectId/rpi-mappings` | POST | `projectId, data` | `RPIMapping` |
+| `updateRPIMapping` | `/projects/:projectId/rpi-mappings/:id` | PATCH | `projectId, id, data` | `RPIMapping` |
+| `deleteRPIMapping` | `/projects/:projectId/rpi-mappings/:id` | DELETE | `projectId, id` | `{ success: boolean }` |
+| `getProjectKpi` | `/projects/kpi` | GET | None | `KPI` |
+| `getRecentProjects` | `/projects/recent` | GET | `limit` | `Project[]` |
+| `getProjectsWithFilters` | `/projects` | GET | `filters` | `{ items, total }` |
+| `getSourceMappingTables` | `/projects/:projectId/sources/:sourceId/mapping-tables` | GET | `projectId, sourceId` | `MappingTable[]` |
 
-**ESLint:**
+**Request/Response Transformation**:
+- Requests use camelCase for JavaScript compatibility
+- Backend may use snake_case, transformation handled by backend
+- No client-side transformation logic present
 
-- **Config:** `@eslint/js`, `eslint-plugin-vue`, `@vue/eslint-config-prettier`
-- **Script:** `npm run lint` — Runs with `--fix` flag
+**Error Handling Strategy**:
+- **401**: Redirects to login (via client interceptor)
+- **403**: Shows toast error
+- **409**: Shows toast error (e.g., duplicate project name)
+- **422**: Validation errors with field-specific messages (handled in components)
+- **500**: Shows toast error
 
-**Prettier:**
-
-- **Config:** Implicit (uses default Prettier settings)
-- **Script:** `npm run format` — Formats `src/` directory
-
----
-
-### CI/CD Pipeline
-
-**Status:** Not present in codebase
-
-**Note:** No CI/CD configuration files (e.g., `.github/workflows/`, `.gitlab-ci.yml`) are present in the repository.
-
----
-
-## 12. Testing
-
-### Test Setup
-
-**Status:** Not present in codebase
-
-**Note:** No testing framework (Vitest, Jest, Cypress) is configured in the project.
-
-### How to Run Tests
-
-> N/A — not present in this codebase
-
----
-
-## 13. Known Limitations & TODOs
-
-### Hard-Coded Values
-
-1. **Ownership options** — Hard-coded in multiple components:
-
-   - `CreateRPIMappingDialog.vue` line 58-63
-   - `RPIMappingPanel.vue` line 69
-   - Should be moved to `constants/rpi.js`
-
-2. **Status options** — Duplicated across files:
-
-   - `CreateRPIMappingDialog.vue` line 66-70
-   - `RPIMappingPanel.vue` line 72-76
-   - Should use `RPI_STATUS_OPTIONS` from `constants/rpi.js`
-
-3. **Measurement type options** — Hard-coded in dialogs:
-   - Should use `RPI_MEASUREMENT_TYPES` from `constants/rpi.js`
+**Mock Data Fallback**: None — application requires live backend connection
 
 ---
 
-### Known Bugs or Edge Cases
-
-1. **Source column type mismatch** — `validateRPIMappingLink()` logs warning but doesn't block save:
-
-   ```javascript
-   // src/composables/useRPIMappingForm.js:100-105
-   if (selectedColumn.value?.dataType !== expectedType) {
-     console.warn("Type mismatch:", { dataType, expectedType });
-   }
-   ```
-
-2. **Empty source handling** — When no source is selected, `objectField` is manual input:
-
-   - No validation that manual field matches source column types
-
-3. **Mock data fallback** — Always returns mock data on error, no user notification:
-   - `src/api/projectsWithMock.js` logs warning but UI shows mock data silently
-
----
-
-### Planned Improvements (from comments)
-
-1. **Form validation** — Comments indicate need for better validation:
-
-   - `CreateRPIMappingDialog.vue` line 121-128: Manual validation instead of library
-
-2. **Type safety** — JSDoc types used but no TypeScript:
-
-   - Consider migrating to TypeScript for better type safety
-
-3. **API error handling** — Comments suggest improving error UX:
-   - `src/api/client.js` line 45-50: Error wrapping could include more context
-
----
-
-## 14. Glossary
-
-| Term                | Definition                                                                                                      |
-| ------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **RPI**             | Реестр Показателей Индикаторов (Registry of Indicators) — system for managing analytical metrics and dimensions |
-| **РПИ**             | Russian abbreviation for RPI                                                                                    |
-| **Маппинг**         | Mapping — process of connecting source columns to RPI indicators                                                |
-| **Показатель**      | Indicator / Metric — a measured value in the RPI system                                                         |
-| **Измерение**       | Dimension — a categorical attribute for grouping metrics                                                        |
-| **Метрика**         | Metric — a quantitative measure                                                                                 |
-| **Базовый**         | Basic — a column directly from source data                                                                      |
-| **Расчётный**       | Calculated — a column derived from formula                                                                      |
-| **Принадлежность**  | Ownership — department/team responsible for an RPI record                                                       |
-| **Утверждено**      | Approved — RPI status indicating final approval                                                                 |
-| **На проверке**     | In Review — RPI status indicating pending review                                                                |
-| **Черновик**        | Draft — RPI status indicating work in progress                                                                  |
-| **camelCase**       | JavaScript naming convention (e.g., `projectId`)                                                                |
-| **snake_case**      | API naming convention (e.g., `project_id`)                                                                      |
-| **Store**           | Pinia store — centralized state management module                                                               |
-| **Composable**      | Vue 3 composition function for reusable logic                                                                   |
-| **Bounded Context** | Domain-driven design term for a logical boundary of functionality                                               |
-
----
-
-## Appendix: Data Models
+## 10. Data Models & TypeScript Interfaces
 
 ### Project
 
-```typescript
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  status: "active" | "draft" | "archived";
-  sources: Source[];
-  rpiRecords: RPIMapping[];
-  createdAt: string;
-  updatedAt: string;
+```javascript
+{
+  id: number,
+  name: string,
+  description: string,
+  status: 'draft' | 'active' | 'archived',
+  created_at: string,
+  updated_at: string,
 }
 ```
 
 ### Source
 
-```typescript
-interface Source {
-  id: string;
-  project_id: string;
-  name: string;
-  description: string;
-  type: "API" | "DB" | "FILE" | "STREAM";
-  row_count: number;
-  last_updated: string;
+```javascript
+{
+  id: number,
+  project_id: number,
+  name: string,
+  type: string,
+  description: string,
+  created_at: string,
+  updated_at: string,
 }
 ```
 
 ### MappingTable
 
-```typescript
-interface MappingTable {
-  id: string;
-  project_id: string;
-  name: string;
-  description: string;
-  source_id: string;
-  columns: MappingColumn[];
+```javascript
+{
+  id: number,
+  project_id: number,
+  source_id: number,
+  name: string,
+  created_at: string,
+  updated_at: string,
 }
 ```
 
 ### MappingColumn
 
-```typescript
-interface MappingColumn {
-  id: string;
-  mapping_table_id: string;
-  name: string;
-  type: "metric" | "dimension";
-  data_type:
-    | "string"
-    | "integer"
-    | "number"
-    | "boolean"
-    | "date"
-    | "datetime"
-    | "text";
-  description: string;
-  is_calculated: boolean;
-  formula: string | null;
+```javascript
+{
+  id: number,
+  project_id: number,
+  source_id: number,
+  mapping_table_id: number,
+  name: string,
+  data_type: string,
+  is_required: boolean,
+  created_at: string,
+  updated_at: string,
 }
 ```
 
 ### RPIMapping
 
-```typescript
-interface RPIMapping {
-  id: string;
-  number: number;
-  project_id: string;
-  ownership: string;
-  status: "approved" | "review" | "draft";
-  measurement_type: "Измерение" | "Метрика";
-  is_calculated: boolean;
-  formula: string | null;
-  measurement: string;
-  measurement_description: string;
-  source_report: string;
-  object_field: string;
-  source_column_id: string | null;
-  date_added: string;
-  date_removed: string | null;
-  comment: string;
-  verification_file: string | null;
+```javascript
+{
+  id: number,
+  project_id: number,
+  rpi_name: string,
+  number: number,
+  ownership: 'internal' | 'external',
+  status: 'draft' | 'review' | 'approved',
+  block: string,
+  measurement_type: string,
+  is_calculated: boolean,
+  formula: string,
+  measurement: string,
+  measurement_description: string,
+  object_field: string,
+  source_column_id: number | null,
+  date_added: string,
+  date_removed: string,
+  comment: string,
+  verification_file: string,
+  created_at: string,
+  updated_at: string,
 }
+```
+
+### KPI
+
+```javascript
+{
+  total: number,
+  active: number,
+  draft: number,
+  archived: number,
+  last_update_date: string,
+}
+```
+
+### Enum Values and Constants
+
+**Path**: [`src/constants/rpi.js`](src/constants/rpi.js:1)
+
+| Constant | Values | Description |
+|----------|--------|-------------|
+| `RPI_STATUS_OPTIONS` | `[{ value: 'draft', label: 'Draft' }, { value: 'review', label: 'Review' }, { value: 'approved', label: 'Approved' }]` | RPI status options |
+| `RPI_OWNERSHIP_OPTIONS` | `[{ value: 'internal', label: 'Internal' }, { value: 'external', label: 'External' }]` | Ownership options |
+| `RPI_MEASUREMENT_TYPES` | `['absolute', 'ratio', 'index']` | Measurement types |
+| `MEASUREMENT_TYPE_MAP` | `{ absolute: 'Абсолютный показатель', ratio: 'Относительный показатель', index: 'Индексный показатель' }` | Russian labels |
+| `RPI_OWNERSHIP_VALUES` | `['internal', 'external']` | Valid ownership values |
+| `RPI_STATUS_VALUES` | `['draft', 'review', 'approved']` | Valid status values |
+
+**Path**: [`src/constants/workflow.js`](src/constants/workflow.js:1)
+
+| Constant | Values | Description |
+|----------|--------|-------------|
+| `WORKFLOW_STEPS` | `[{ name: 'RPI_FORM', title: 'Карточки РПИ', description: '...' }, ...]` | Workflow step definitions |
+| `WORKFLOW_STORAGE_KEY` | `'layermap_workflow_'` | localStorage key prefix |
+
+**Path**: [`src/constants/resources.js`](src/constants/resources.js:1)
+
+| Constant | Values | Description |
+|----------|--------|-------------|
+| `RESOURCE_NAMES` | `{ PROJECT: 'Проект', SOURCE: 'Источник', MAPPING_TABLE: 'Таблица маппинга', MAPPING_COLUMN: 'Колонка', RPI_MAPPING: 'Карточка РПИ' }` | Resource labels |
+| `RESOURCE_ICONS` | `{ PROJECT: 'pi pi-cog', SOURCE: 'pi pi-database', ... }` | Resource icons |
+
+---
+
+## 11. UI & Styling
+
+### UI Component Library
+
+**Library**: PrimeVue 4.3.1
+
+**Theme**: PrimeVue Aura Theme (default)
+
+**Theme Configuration**:
+- Applied via `PrimeVue` config in [`src/main.js`](src/main.js:1)
+- `ripple: true` — Enable ripple effects
+- `darkModeSelector: '.p-dark'` — Dark mode class selector
+
+### CSS Architecture
+
+**Global Styles**: [`src/assets/main.css`](src/assets/main.css:1)
+
+**Structure**:
+1. **Tailwind directives** — `@tailwind base`, `@tailwind components`, `@tailwind utilities`
+2. **Semantic design tokens** — CSS variables mapped to PrimeVue theme variables
+3. **Base styles** — Minimal reset, body styles
+4. **Scrollbar styling** — Theme-aware scrollbars
+
+**CSS Variables (Light Theme)**:
+| Variable | Value | Description |
+|----------|-------|-------------|
+| `--app-bg` | `var(--p-surface-50)` | Background color |
+| `--app-surface` | `var(--p-surface-0)` | Surface color |
+| `--app-text` | `var(--p-surface-900)` | Primary text |
+| `--app-text-secondary` | `var(--p-surface-600)` | Secondary text |
+| `--app-border` | `var(--p-surface-200)` | Border color |
+| `--app-primary` | `var(--p-primary-600)` | Primary color |
+| `--app-success` | `var(--p-green-600)` | Success color |
+| `--app-warning` | `var(--p-amber-500)` | Warning color |
+| `--app-error` | `var(--p-red-500)` | Error color |
+| `--app-info` | `var(--p-sky-600)` | Info color |
+
+**CSS Variables (Dark Theme)**:
+- Same variable names with different values when `:root[class="p-dark"]` is active
+- Adjusted for dark background with lighter text
+
+### Responsive Design Breakpoints
+
+**Tailwind Default**:
+| Breakpoint | Width | Usage |
+|------------|-------|-------|
+| `sm` | 640px | Small devices |
+| `md` | 768px | Medium devices |
+| `lg` | 1024px | Large devices |
+| `xl` | 1280px | Extra large |
+| `2xl` | 1536px | XXL |
+
+**Custom Responsive Behavior**:
+- [`ProjectsTable.vue`](src/components/home/ProjectsTable.vue:1) switches between card and table layout at `window.innerWidth < 768`
+- [`AppTopbar.vue`](src/layout/AppTopbar.vue:1) uses responsive menu toggle
+
+### Key Design Tokens
+
+**Colors** (from [`tailwind.config.js`](tailwind.config.js:1)):
+| Token | Value | Usage |
+|-------|-------|-------|
+| `primary.DEFAULT` | `#01696f` | Brand primary color |
+| `primary.hover` | `#0c4e54` | Primary hover state |
+| `surface.base` | `#f7f6f2` | Surface base color |
+| `surface.card` | `#f9f8f5` | Card surface color |
+| `content.DEFAULT` | `#28251d` | Content text color |
+| `content.muted` | `#7a7974` | Muted text color |
+
+**Typography**:
+```javascript
+fontFamily: {
+  sans: ['Inter', 'system-ui', 'sans-serif'],
+}
+```
+
+**Border Radius**:
+| Token | Value |
+|-------|-------|
+| `sm` | `6px` |
+| `md` | `8px` |
+| `lg` | `12px` |
+
+**Box Shadow**:
+| Token | Value |
+|-------|-------|
+| `card` | `0 1px 2px rgba(0,0,0,0.06)` |
+| `hover` | `0 4px 12px rgba(0,0,0,0.08)` |
+
+---
+
+## 12. Utilities
+
+### format.js
+
+**Path**: [`src/utils/format.js`](src/utils/format.js:1)
+
+**Purpose**: Date and number formatting utilities.
+
+**Exported functions**:
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `formatDate` | `dateString` | `string` | Formats date to `DD.MM.YYYY HH:MM` |
+| `formatNumber` | `number` | `string` | Formats number with spaces as thousands separator |
+
+**Usage example**:
+```javascript
+import { formatDate, formatNumber } from '@/utils/format';
+
+formatDate('2024-01-15T10:30:00'); // "15.01.2024 10:30"
+formatNumber(1234567); // "1 234 567"
 ```
 
 ---
 
-_Document generated from codebase analysis. Last updated: 2024_
+### mapping.js
+
+**Path**: [`src/utils/mapping.js`](src/utils/mapping.js:1)
+
+**Purpose**: RPI mapping helper functions for finding related data.
+
+**Exported functions**:
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `getProjectSourceByProjectIdAndName` | `sources, projectName` | `object\|null` | Finds source by project ID and name |
+| `getMappingColumnForRecord` | `columns, rpiMapping` | `object\|null` | Finds column linked to RPI mapping |
+| `getColumnTypeBadgeClass` | `column` | `string` | Returns badge class for column type |
+| `getColumnTypeBadge` | `column` | `object` | Returns badge with label and class |
+
+**Usage example**:
+```javascript
+import { getMappingColumnForRecord } from '@/utils/mapping';
+
+const column = getMappingColumnForRecord(columns, rpiMapping);
+```
+
+---
+
+### status.js
+
+**Path**: [`src/utils/status.js`](src/projects.js:1)
+
+**Purpose**: Status badge and label helper functions.
+
+**Exported functions**:
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `getProjectStatusSeverity` | `status` | `string` | Returns severity for project status |
+| `getProjectStatusLabel` | `status` | `string` | Returns Russian label for project status |
+| `getSourceTypeSeverity` | `type` | `string` | Returns severity for source type |
+| `getMappingStatusLabel` | `status` | `string` | Returns Russian label for mapping status |
+| `getStatusPillClass` | `status` | `string` | Returns pill class for status |
+| `getStatusDotClass` | `status` | `string` | Returns dot class for status indicator |
+| `getStatusBtnActiveClass` | `status` | `string` | Returns button active class |
+
+**Usage example**:
+```javascript
+import { getProjectStatusSeverity, getStatusPillClass } from '@/utils/status';
+
+const severity = getProjectStatusSeverity('active'); // 'success'
+const pillClass = getStatusPillClass('approved'); // 'bg-green-100 text-green-800'
+```
+
+---
+
+## 13. Constants & Configuration
+
+### Constants Overview
+
+**Path**: [`src/constants/rpi.js`](src/constants/rpi.js:1)
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `RPI_STATUS_OPTIONS` | `[{ value: 'draft', label: 'Draft' }, ...]` | Status dropdown options |
+| `RPI_OWNERSHIP_OPTIONS` | `[{ value: 'internal', label: 'Internal' }, ...]` | Ownership dropdown options |
+| `RPI_MEASUREMENT_TYPES` | `['absolute', 'ratio', 'index']` | Valid measurement types |
+| `MEASUREMENT_TYPE_MAP` | `{ absolute: 'Абсолютный показатель', ... }` | Russian translations |
+| `RPI_OWNERSHIP_VALUES` | `['internal', 'external']` | Valid ownership values |
+| `RPI_STATUS_VALUES` | `['draft', 'review', 'approved']` | Valid status values |
+| `createEmptyRPIForm` | `Function` | Returns empty RPI form object |
+
+**Path**: [`src/constants/workflow.js`](src/constants/workflow.js:1)
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `WORKFLOW_STEPS` | `[{ name: 'RPI_FORM', title: 'Карточки РПИ', ... }, ...]` | Workflow step definitions |
+| `WORKFLOW_STORAGE_KEY` | `'layermap_workflow_'` | localStorage key prefix |
+
+**Path**: [`src/constants/resources.js`](src/constants/resources.js:1)
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `RESOURCE_NAMES` | `{ PROJECT: 'Проект', SOURCE: 'Источник', ... }` | Resource labels in Russian |
+| `RESOURCE_ICONS` | `{ PROJECT: 'pi pi-cog', SOURCE: 'pi pi-database', ... }` | PrimeIcons icons |
+
+### Feature Flags
+
+No feature flags are implemented in this codebase.
+
+### Environment-Driven Behavior
+
+- **API Base URL**: Configured via `VITE_API_BASE_URL` environment variable
+- **Default**: `http://localhost:8000`
+- **Authentication**: Always uses `httpOnly` cookies (no token storage in localStorage after mount)
+
+---
+
+## 14. Authentication & Authorization
+
+### Auth Flow
+
+1. **Initial Load**:
+   - App mounts, clears `access_token` from localStorage (if present)
+   - Router guard triggers `authStore.loadUser()`
+   - If authenticated, user data is loaded from `/users/me`
+   - If not authenticated, redirect to `/login`
+
+2. **Login**:
+   - User submits email/password on `/login`
+   - `authStore.login()` calls `POST /auth/jwt/login`
+   - Backend sets `httpOnly` access token cookie
+   - `authStore.loadUser()` fetches user data from `/users/me`
+   - Redirect to home or `redirect` query param
+
+3. **Registration**:
+   - User submits form on `/register`
+   - `register()` calls `POST /auth/register`
+   - Auto-logs in with `authStore.login()`
+   - Redirect to home
+
+4. **Protected Routes**:
+   - Router guard checks `to.meta.requiresAuth`
+   - If true and not authenticated, redirect to `/login` with `redirect` query
+   - If authenticated, allow navigation
+
+5. **Logout**:
+   - User clicks logout in topbar
+   - `authStore.logout()` calls `POST /auth/logout`
+   - Clears user state
+   - Redirects to `/login`
+
+### Token Storage
+
+- **Method**: `httpOnly` cookies (set by backend)
+- **Client Storage**: None — localStorage `access_token` is cleared on mount
+- **Credentials**: `withCredentials: true` in Axios client
+
+### Route Guard Logic
+
+**Path**: [`src/router/index.js`](src/router/index.js:1)
+
+```javascript
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  
+  // Public routes
+  if (to.meta.requiresAuth === false) {
+    if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
+      return next('/');
+    }
+    return next();
+  }
+  
+  // Protected routes
+  if (!authStore.isAuthenticated) {
+    await authStore.loadUser();
+  }
+  if (!authStore.isAuthenticated) {
+    return next({ path: '/login', query: { redirect: to.fullPath } });
+  }
+  
+  next();
+});
+```
+
+### Auth State Initialization
+
+**Path**: [`src/stores/auth.js`](src/stores/auth.js:1)
+
+```javascript
+// On store initialization
+if (!isInitialized.value) {
+  isInitialized.value = true;
+  _loadingPromise.value = loadUser();
+}
+await _loadingPromise.value;
+```
+
+---
+
+## 15. Error Handling
+
+### Global Error Handling
+
+**HTTP Client Interceptors** ([`src/api/client.js`](src/api/client.js:1)):
+- **401**: Redirects to `/login`
+- **403**: Shows toast with "Ошибка сервера"
+- **409**: Shows toast with "Ошибка сервера"
+- **Other**: Shows toast with error message or "Ошибка сети"
+
+**Toast Notifications**:
+- Used via `useToast()` from PrimeVue
+- Groups: `global`, `validation`
+- Auto-dismiss after 3 seconds
+
+### Per-Component Error States
+
+**LoginView** ([`src/views/LoginView.vue`](src/views/LoginView.vue:1)):
+- Shows "Неверный email или пароль" on 401
+- Shows loading state during request
+- Disables submit button while loading
+
+**RegisterView** ([`src/views/RegisterView.vue`](src/views/RegisterView.vue:1)):
+- Shows "Пользователь с таким email уже существует" on 409
+- Shows loading state during request
+- Disables submit button while loading
+
+**Create Dialogs**:
+- Field-specific errors from 422 responses
+- Shows validation errors below each field
+- Disables submit button while submitting
+
+### User-Facing Error Messages
+
+| Error Code | Message | Location |
+|------------|---------|----------|
+| 401 (login) | "Неверный email или пароль" | [`LoginView.vue`](src/views/LoginView.vue:85) |
+| 409 (register) | "Пользователь с таким email уже существует" | [`RegisterView.vue`](src/views/RegisterView.vue:101) |
+| 403 | "Ошибка сервера" | [`client.js`](src/api/client.js:50) |
+| 409 | "Ошибка сервера" | [`client.js`](src/api/client.js:54) |
+| Network error | "Ошибка сети" | [`client.js`](src/api/client.js:62) |
+| Generic error | "Произошла ошибка" | [`client.js`](src/api/client.js:66) |
+
+**Validation Errors** (422):
+- Parsed from `error.response.data.detail` array
+- Displayed below each field in forms
+- Format: `{ field: ["Error message"] }`
+
+---
+
+## 16. Testing
+
+### How to Run Tests
+
+```bash
+# Watch mode (recommended for development)
+npm run test
+
+# Run once and exit
+npm run test:run
+
+# Run with UI
+npm run test:ui
+
+# Generate coverage report
+npm run coverage
+```
+
+### Test Structure
+
+**Directory**: [`tests/`](tests/)
+
+| Path | Description |
+|------|-------------|
+| `tests/setup.js` | Test setup file (Pinia, router mocks) |
+| `tests/api/` | API service tests |
+| `tests/router/` | Router guard tests |
+| `tests/stores/` | Pinia store tests |
+| `tests/views/` | Component view tests |
+
+**Test Files**:
+| File | Tests |
+|------|-------|
+| `tests/api/auth.spec.js` | Auth API methods (login, register, getMe, logout) |
+| `tests/api/client.spec.js` | HTTP client configuration and interceptors |
+| `tests/api/projects.spec.js` | Projects API contract tests |
+| `tests/router/index.spec.js` | Route guards and navigation |
+| `tests/stores/auth.spec.js` | Auth store actions and state |
+| `tests/views/LoginView.spec.js` | Login page component tests |
+| `tests/views/RegisterView.spec.js` | Registration page component tests |
+
+### Test Coverage
+
+**What is Tested**:
+- **Unit Tests**: API methods, store actions, utility functions
+- **Integration Tests**: Router guards, component rendering
+- **Mocked Dependencies**: PrimeVue toast, Vue Router, API client
+
+**Not Tested**:
+- E2E tests (no Cypress/Playwright setup)
+- Visual regression tests
+- Performance tests
+
+**Coverage Notes**:
+- API layer: ~80% coverage
+- Stores: ~70% coverage
+- Views: ~60% coverage (critical paths only)
+- Components: Minimal coverage (focus on views)
+
+---
+
+## 17. Known Limitations & TODOs
+
+### Hard-Coded Values
+
+| Value | Location | Should Be |
+|-------|----------|-----------|
+| `VITE_API_BASE_URL` | `.env` | Configurable per environment |
+| `WORKFLOW_STORAGE_KEY` | [`workflow.js`](src/constants/workflow.js:1) | Dynamic based on app name |
+| Toast group names | Multiple | Centralized constants |
+
+### Missing Features
+
+- **User Profile Page**: No page to view/edit user profile
+- **Password Reset**: No forgot password flow
+- **Email Verification**: No email verification after registration
+- **Role-Based Access Control**: All routes require authentication, no role checks
+- **Audit Logging**: No audit trail for changes
+- **Bulk Operations**: No bulk delete/update for RPI mappings
+- **Export/Import**: No CSV/Excel export for RPI mappings
+- **Search History**: No search query persistence
+- **Keyboard Shortcuts**: No keyboard navigation shortcuts
+
+### Known Bugs & Edge Cases
+
+- **Workflow Persistence**: localStorage may not sync across tabs
+- **Pagination**: Page state resets when filters change
+- **Form Validation**: Some validation only happens on submit
+- **Loading States**: Some actions don't show loading indicators
+- **Error Messages**: Generic error messages for some API errors
+
+### Planned Improvements
+
+- [ ] Add user profile management
+- [ ] Implement password reset flow
+- [ ] Add role-based access control
+- [ ] Implement audit logging
+- [ ] Add bulk operations for RPI mappings
+- [ ] Add CSV/Excel export functionality
+- [ ] Improve loading states across all actions
+- [ ] Add keyboard shortcuts for common actions
+- [ ] Implement search query persistence
+- [ ] Add dark mode toggle in UI (currently only via class)
+- [ ] Add internationalization (i18n) support
+- [ ] Add PWA support for offline capability
+
+---
+
+## 18. Glossary
+
+| Term | Definition |
+|------|------------|
+| **RPI** | Regulatory Performance Indicator (Регуляторный показатель эффективности) |
+| **RPI Mapping** | Mapping between internal data columns and regulatory indicators |
+| **Source** | Data source (database, API, file) that provides data for mapping |
+| **Mapping Table** | Table that defines columns to be mapped to RPIs |
+| **Mapping Column** | Individual column in a mapping table |
+| **Workflow** | Multi-step project creation process (RPI form → tables → columns) |
+| **KPI** | Key Performance Indicator (project metrics dashboard) |
+| **httpOnly Cookie** | Secure cookie that cannot be accessed via JavaScript |
+| **Composition API** | Vue 3 API pattern for organizing component logic |
+| **Pinia** | Vue state management library (successor to Vuex) |
+| **PrimeVue** | UI component library for Vue.js |
+| **Tailwind CSS** | Utility-first CSS framework |
+| **Vite** | Build tool and dev server for Vue applications |
+| **Aura Theme** | PrimeVue default theme with semantic color tokens |
+
+---
+
+## Appendix: Quick Reference
+
+### Common Operations
+
+**Create a Project**:
+```javascript
+await useProjectsStore().createProject({ name, description });
+```
+
+**Create an RPI Mapping**:
+```javascript
+await useProjectsStore().createRPIMapping(projectId, {
+  rpi_name: 'RPI-001',
+  number: 100,
+  ownership: 'internal',
+  status: 'draft',
+  // ...
+});
+```
+
+**Filter RPI Mappings**:
+```javascript
+const { filteredRows, getFilterParams } = useRPIFilters(projectId, rpiMappings);
+const params = getFilterParams(); // { search, status, page, size, ... }
+```
+
+**Check API Status**:
+```javascript
+const { available, refreshStatus } = useApiStatus();
+await refreshStatus();
+```
+
+### Navigation
+
+```javascript
+// From within component
+const router = useRouter();
+await router.push('/projects');
+await router.push(`/projects/${projectId}`);
+await router.push(`/projects/${projectId}/mapping`);
+```
+
+### Status Values
+
+**Project Status**: `draft`, `active`, `archived`
+
+**RPI Status**: `draft`, `review`, `approved`
+
+**RPI Ownership**: `internal`, `external`
+
+**Measurement Types**: `absolute`, `ratio`, `index`
+
+---
+
+*Document generated from LayerMap codebase analysis.*

@@ -63,12 +63,13 @@ describe('auth API', async () => {
 
   beforeEach(() => vi.clearAllMocks());
 
-  it('login POST /auth/login/json', async () => {
-    vi.spyOn(apiClient, 'post').mockResolvedValueOnce({ data: { success: true } });
+  it('login POST /auth/jwt/login', async () => {
+    vi.spyOn(apiClient, 'post').mockResolvedValueOnce({ data: { access_token: 'token' } });
     await login('test@test.com', 'password123');
-    expect(apiClient.post).toHaveBeenCalledWith('/auth/login/json', {
-      email: 'test@test.com',
-      password: 'password123',
+    expect(apiClient.post).toHaveBeenCalledWith('/auth/jwt/login', expect.any(URLSearchParams), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
   });
 
@@ -82,12 +83,12 @@ describe('auth API', async () => {
     });
   });
 
-  it('getMe GET /auth/me', async () => {
+  it('getMe GET /users/me', async () => {
     vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
       data: { id: 1, email: 't@t.com', full_name: 'User' },
     });
     const result = await getMe();
-    expect(apiClient.get).toHaveBeenCalledWith('/auth/me');
+    expect(apiClient.get).toHaveBeenCalledWith('/users/me');
     expect(result.full_name).toBe('User');
   });
 

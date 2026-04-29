@@ -10,6 +10,9 @@
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectsStore } from "@/stores/projects";
+import { useSourcesStore } from "@/stores/sources";
+import { useMappingTablesStore } from "@/stores/tables";
+import { useRPIMappingsStore } from "@/stores/rpiMappings";
 import { useProject } from "@/composables/useProject";
 import { useRPIFilters } from "@/composables/useRPIFilters";
 import { useRPIMappingForm } from "@/composables/useRPIMappingForm";
@@ -21,10 +24,13 @@ import Button from "primevue/button";
 
 const router = useRouter();
 const projectsStore = useProjectsStore();
+const sourcesStore = useSourcesStore();
+const tablesStore = useMappingTablesStore();
+const rpiStore = useRPIMappingsStore();
 const { projectId, project, loadProjectData, loading, error } = useProject();
 
 // ── Data ───────────────────────────────────────────────────────
-const rows = computed(() => projectsStore.getRPIMappingsByProjectId(projectId.value));
+const rows = computed(() => rpiStore.getRPIMappingsByProjectId(projectId.value));
 
 // Загрузка данных при монтировании компонента
 onMounted(async () => {
@@ -46,17 +52,17 @@ const {
     panelOpen, panelMode, activeRow, formTouched, form,
     openAddPanel, openEditPanel, closePanel, saveRule, deleteRule,
     fillFormFromColumn,
-} = useRPIMappingForm(rows, projectsStore, projectId);
+} = useRPIMappingForm(rows, rpiStore, projectId);
 
 // ── Source & Field dropdowns (isolated per project) ───────────
 const projectSources = computed(() => {
     if (!projectId.value) return [];
-    return projectsStore.getSourcesByProjectId(projectId.value) || [];
+    return sourcesStore.getSourcesByProjectId(projectId.value) || [];
 });
 
 const projectMappingTables = computed(() => {
     if (!projectId.value) return [];
-    return projectsStore.getMappingTablesByProjectId(projectId.value) || [];
+    return tablesStore.getMappingTablesByProjectId(projectId.value) || [];
 });
 
 const selectedSourceObj = computed(() =>

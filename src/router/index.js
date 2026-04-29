@@ -4,7 +4,8 @@ import HomeView from "@/views/HomeView.vue";
 import ProjectsListView from "@/views/ProjectsListView.vue";
 import ProjectDetailView from "@/views/ProjectDetailView.vue";
 import RPIMappingView from "@/views/RPIMappingView.vue";
-import SourceDetailView from "@/views/SourceDetailView.vue";
+
+import TableDetailView from '@/views/TableDetailView.vue';
 import { useAuthStore } from "../stores/auth.js";
 
 /**
@@ -22,7 +23,7 @@ export function createAppRouter() {
         path: "/login",
         name: "Login",
         component: () => import("@/views/LoginView.vue"),
-        meta: { requiresAuth: false },
+        meta: { requiresAuth: false, public: true },
       },
       {
         path: "/register",
@@ -32,7 +33,6 @@ export function createAppRouter() {
       },
       {
         path: "/",
-        name: "home",
         component: AppLayout,
         children: [
           {
@@ -41,38 +41,42 @@ export function createAppRouter() {
             component: HomeView,
             meta: { requiresAuth: true },
           },
-        ],
-      },
-      {
-        path: "/projects",
-        name: "projects",
-        component: AppLayout,
-        redirect: "/projects/list",
-        meta: { requiresAuth: true },
-        children: [
           {
-            path: "list",
-            name: "ProjectsList",
-            component: ProjectsListView,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: ":id",
-            name: "ProjectDetail",
-            component: ProjectDetailView,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: ":id/mapping",
-            name: "RPIMapping",
-            component: RPIMappingView,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: ":id/sources/:sourceId",
-            name: "SourceDetail",
-            component: SourceDetailView,
-            meta: { requiresAuth: true },
+            path: "projects",
+            redirect: { name: "ProjectsList" },
+            children: [
+              {
+                path: "list",
+                name: "ProjectsList",
+                component: ProjectsListView,
+                meta: { requiresAuth: true },
+              },
+              {
+                path: ":id",
+                name: "ProjectDetail",
+                component: ProjectDetailView,
+                meta: { requiresAuth: true },
+              },
+              {
+                path: ":id/mapping",
+                name: "RPIMapping",
+                component: RPIMappingView,
+                meta: { requiresAuth: true },
+              },
+              {
+                path: ":id/sources/:sourceId",
+                name: "SourceDetail",
+                meta: { requiresAuth: true },
+                children:[
+                  {
+                    path: 'tables/:tableId',
+                    name: 'TableDetail',
+                    component: TableDetailView,
+                    meta: { requiresAuth: true },
+                  }
+                ]
+              },
+            ],
           },
         ],
       },

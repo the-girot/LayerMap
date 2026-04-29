@@ -3,11 +3,17 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import Button from 'primevue/button';
 import { useProjectsStore } from '@/stores/projects';
+import { useSourcesStore } from '@/stores/sources';
+import { useMappingTablesStore } from '@/stores/tables';
+import { useRPIMappingsStore } from '@/stores/rpiMappings';
 import { formatDate } from '@/utils/format';
 
 const route = useRoute();
 const router = useRouter();
 const projectsStore = useProjectsStore();
+const sourcesStore = useSourcesStore();
+const tablesStore = useMappingTablesStore();
+const rpiStore = useRPIMappingsStore();
 
 const projectId = computed(() => {
   const id = Number(route.params.id);
@@ -25,9 +31,9 @@ onMounted(async () => {
 });
 
 const project = computed(() => projectsStore.getProjectById(projectId.value));
-const sources = computed(() => projectsStore.getSourcesByProjectId(projectId.value));
-const mappingTables = computed(() => projectsStore.getMappingTablesByProjectId(projectId.value));
-const rpiMappings = computed(() => projectsStore.getRPIMappingsByProjectId(projectId.value));
+const sources = computed(() => sourcesStore.getSourcesByProjectId(projectId.value));
+const mappingTables = computed(() => tablesStore.getMappingTablesByProjectId(projectId.value));
+const rpiMappings = computed(() => rpiStore.getRPIMappingsByProjectId(projectId.value));
 
 const tablesBySource = computed(() => {
   return mappingTables.value.reduce((acc, table) => {
@@ -129,7 +135,7 @@ function addSource() {
 
 <template>
   <div class="min-h-screen bg-app-bg">
-    <main class="p-4 md:p-6 lg:p-8">
+    <main class="p-2 md:p-4 lg:p-6">
       <div class="mb-4 flex items-center gap-2 text-sm">
         <i class="pi pi-home text-primary" />
         <RouterLink :to="{ name: 'ProjectsList' }" class="text-primary hover:underline">
@@ -253,20 +259,27 @@ function addSource() {
                       <th class="px-6 py-3 text-left text-sm font-medium text-app-text-muted">
                         Обновлена
                       </th>
+                      <th class="px-6 py-3"></th>
                     </tr>
                   </thead>
 
                   <tbody>
                     <tr v-for="table in tablesBySource[source.id]" :key="table.id"
                       class="border-t border-app-border hover:bg-app-surface-hover">
-                      <td class="px-6 py-4 text-app-text">{{ table.name }}</td>
-                      <td class="px-6 py-4 text-sm text-app-text-muted">
-                        {{ table.description || '—' }}
-                      </td>
-                      <td class="px-6 py-4 text-sm text-app-text-muted">
-                        {{ formatDate(table.updated_at || table.created_at) }}
-                      </td>
-                    </tr>
+                    <td class="px-6 py-4 text-app-text">{{ table.name }}</td>
+                    <td class="px-6 py-4 text-sm text-app-text-muted">{{ table.description || '—' }}</td>
+                    <td class="px-6 py-4 text-sm text-app-text-muted">{{ formatDate(table.updated_at || table.created_at) }}</td>
+                    <td class="px-6 py-4 text-right">
+                      <Button
+                        label="Перейти"
+                        icon="pi pi-arrow-right"
+                        icon-pos="right"
+                        text
+                        :pt="{ root: 'rounded-lg min-h-[36px] text-sm' }"
+                        @click.stop="openSource(source.id)"
+                      />
+                    </td>
+                  </tr>
                   </tbody>
                 </table>
               </div>

@@ -8,10 +8,11 @@ import { computed, ref, watch } from "vue";
  * @param {import('vue').Ref<Array>} rows - Массив РПИ-записей
  * @param {object} options - Опции
  * @param {number} options.pageSize - Размер страницы по умолчанию
+ * @param {boolean} options.useServerFilters - Использовать серверную фильтрацию (по умолчанию false)
  * @returns {object}
  */
 export function useRPIFilters(rows, options = {}) {
-  const { pageSize: defaultPageSize = 20 } = options;
+  const { pageSize: defaultPageSize = 20, useServerFilters = false } = options;
 
   // Filter state
   const search = ref("");
@@ -24,8 +25,32 @@ export function useRPIFilters(rows, options = {}) {
   const pageFirst = ref(0);
   const pageSize = ref(defaultPageSize);
 
-  /** Отфильтрованные строки */
+  /** Получить параметры фильтрации для серверного запроса */
+  function getFilterParams() {
+    const params = {};
+    if (search.value.trim()) {
+      params.search = search.value.trim();
+    }
+    if (selectedStatus.value !== null) {
+      params.status = selectedStatus.value;
+    }
+    if (selectedOwnership.value !== null) {
+      params.ownership = selectedOwnership.value;
+    }
+    if (selectedMeasurementType.value !== null) {
+      params.measurement_type = selectedMeasurementType.value;
+    }
+    if (selectedCalculatedType.value !== null) {
+      params.is_calculated = selectedCalculatedType.value === "calculated";
+    }
+    return params;
+  }
+
+  /** Отфильтрованные строки (клиентская фильтрация) */
   const filteredRows = computed(() => {
+    if (useServerFilters) {
+      return rows.value;
+    }
     const q = search.value.trim().toLowerCase();
     return rows.value.filter((row) => {
       const matchesSearch =
@@ -65,30 +90,39 @@ export function useRPIFilters(rows, options = {}) {
   });
 
   /** Быстрые фильтры (метрики/измерения) */
-  const quickFilters = computed(() => [
-    { label: "Все", value: null, count: rows.value.length },
-    {
-      label: "Метрики",
-      value: "metric",
-      count: rows.value.filter((r) => r.measurement_type === "Метрика").length,
-    },
-    {
-      label: "Измерения",
-      value: "dimension",
-      count: rows.value.filter((r) => r.measurement_type === "Измерение")
-        .length,
-    },
-  ]);
+  const quickFilters = computed(() => {
+    if (useServerFilters) {
+      return [
+        { label: "Все", value: null, count: null },
+        { label: "Метрики", value: "metric", count: null },
+        { label: "Измерения", value: "dimension", count: null },
+      ];
+    }
+    return [
+      { label: "Все", value: null, count: rows.value.length },
+      {
+        label: "Метрики",
+        value: "metric",
+        count: rows.value.filter((r) => r.measurement_type === "metric").length,
+      },
+      {
+        label: "Измерения",
+        value: "dimension",
+        count: rows.value.filter((r) => r.measurement_type === "dimension")
+          .length,
+      },
+    ];
+  });
 
   /** Счётчики статусов */
   const approvedCount = computed(
-    () => rows.value.filter((r) => r.status === "approved").length,
+    () => (useServerFilters ? null : rows.value.filter((r) => r.status === "approved").length),
   );
   const reviewCount = computed(
-    () => rows.value.filter((r) => r.status === "review").length,
+    () => (useServerFilters ? null : rows.value.filter((r) => r.status === "review" || r.status === "in_review").length),
   );
   const draftCount = computed(
-    () => rows.value.filter((r) => r.status === "draft").length,
+    () => (useServerFilters ? null : rows.value.filter((r) => r.status === "draft").length),
   );
 
   /** Сбросить все фильтры */
@@ -150,5 +184,6 @@ export function useRPIFilters(rows, options = {}) {
     resetFilters,
     setQuickFilter,
     onPage,
+    getFilterParams,
   };
 }

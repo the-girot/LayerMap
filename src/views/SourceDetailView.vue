@@ -9,6 +9,9 @@
 import { computed, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useProjectsStore } from "@/stores/projects";
+import { useSourcesStore } from "@/stores/sources";
+import { useMappingTablesStore } from "@/stores/tables";
+import { useRPIMappingsStore } from "@/stores/rpiMappings";
 import { useProject } from "@/composables/useProject";
 import { COLUMN_TYPE_LABELS, COLUMN_TYPE_COLORS } from "@/stores/workflow";
 import { formatDate, formatNumber } from "@/utils/format";
@@ -24,11 +27,14 @@ import Message from "primevue/message";
 const route = useRoute();
 const router = useRouter();
 const projectsStore = useProjectsStore();
+const sourcesStore = useSourcesStore();
+const tablesStore = useMappingTablesStore();
+const rpiStore = useRPIMappingsStore();
 const { projectId, project, loadProjectData, loading, error } = useProject();
 
 const sourceId = computed(() => route.params.sourceId);
 const source = computed(() =>
-    projectsStore.getSourceById(projectId.value, sourceId.value)
+    sourcesStore.getSourceById(projectId.value, sourceId.value)
 );
 
 // Загрузка данных при монтировании компонента
@@ -40,7 +46,7 @@ onMounted(async () => {
 
 // Получаем таблицы маппинга проекта для отображения колонок
 const mappingTables = computed(() =>
-    projectsStore.getMappingTablesByProjectId(projectId.value)
+    tablesStore.getMappingTablesByProjectId(projectId.value)
 );
 
 // Получаем все колонки из всех таблиц маппинга
@@ -60,20 +66,21 @@ const allColumns = computed(() => {
 
 // Получаем опции РПИ для маппинга
 const rpiOptions = computed(() =>
-    projectsStore.getRPIMappingOptions(projectId.value)
+    rpiStore.getRPIMappingOptions(projectId.value)
 );
 
 // Получаем информацию о выбранном РПИ для колонки
 function getRPIMappingInfo(rpiMappingId) {
     if (!rpiMappingId) return null;
-    const mappings = projectsStore.getRPIMappingsByProjectId(projectId.value);
+    const mappings = rpiStore.getRPIMappingsByProjectId(projectId.value);
     return mappings.find((m) => m.id === rpiMappingId);
 }
 
 // Обработчик изменения маппинга колонки
 function onColumnMappingChange(column, newRpiMappingId) {
-    projectsStore.updateColumnRPIMapping(
+    tablesStore.updateColumnRPIMapping(
         projectId.value,
+        sourceId.value,
         column.tableId,
         column.id,
         newRpiMappingId
