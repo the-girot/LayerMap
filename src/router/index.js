@@ -4,6 +4,7 @@ import HomeView from "@/views/HomeView.vue";
 import ProjectsListView from "@/views/ProjectsListView.vue";
 import ProjectDetailView from "@/views/ProjectDetailView.vue";
 import RPIMappingView from "@/views/RPIMappingView.vue";
+import LayerMappingView from "@/views/LayerMappingView.vue";
 
 import TableDetailView from '@/views/TableDetailView.vue';
 import { useAuthStore } from "../stores/auth.js";
@@ -61,6 +62,12 @@ export function createAppRouter() {
                 path: ":id/mapping",
                 name: "RPIMapping",
                 component: RPIMappingView,
+                meta: { requiresAuth: true },
+              },
+              {
+                path: ":id/layer-mapping",
+                name: "LayerMapping",
+                component: LayerMappingView,
                 meta: { requiresAuth: true },
               },
               {

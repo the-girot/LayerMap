@@ -100,6 +100,11 @@ function openRpiMapping() {
     router.push({ name: 'RPIMapping', params: { id: projectId.value } });
 }
 
+function openLayerMapping() {
+    if (projectId.value === null) return;
+    router.push({ name: 'LayerMapping', params: { id: projectId.value } });
+}
+
 function openSource(sourceId) {
     if (projectId.value === null) return;
     router.push({ name: 'SourceDetail', params: { id: projectId.value, sourceId } });
@@ -151,6 +156,13 @@ async function handleCreateRpi(data) {
                 </div>
             </template>
             <template v-else>
+                <!-- Error banner -->
+                <div v-if="projectsStore.error"
+                    class="mb-4 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                    <i class="pi pi-exclamation-triangle text-lg" />
+                    <span>{{ projectsStore.error }}</span>
+                </div>
+
                 <!-- Breadcrumbs -->
                 <div class="mb-4 flex items-center gap-2 text-sm">
                     <i class="pi pi-home text-primary" />
@@ -177,6 +189,8 @@ async function handleCreateRpi(data) {
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-3">
+                        <Button label="Layer Mapping" icon="pi pi-sitemap"
+                            :pt="{ root: 'rounded-xl min-h-[44px]' }" @click="openLayerMapping" />
                         <Button label="Открыть таблицу РПИ" icon="pi pi-users"
                             :pt="{ root: 'rounded-xl min-h-[44px]' }" @click="openRpiMapping" />
                     </div>

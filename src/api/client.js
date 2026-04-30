@@ -8,8 +8,17 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * In dev mode, the Vite dev server proxies API requests (see vite.config.mjs),
+ * so we use relative URLs (same origin) to avoid CORS issues.
+ * In production, use the configured API base URL.
+ */
+const API_BASE_URL = import.meta.env.DEV
+  ? ''
+  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  baseURL: API_BASE_URL,
   withCredentials: true,  // ← обязательно: отправляет cookie в каждом запросе
   headers: {
     'Content-Type': 'application/json',

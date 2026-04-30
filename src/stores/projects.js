@@ -223,47 +223,86 @@ export const useProjectsStore = defineStore("projects", () => {
   async function loadProjectData(projectId) {
     loading.value = true;
     error.value = null;
-    try {
-      const [project, projectSources, projectRpi] = await Promise.all([
-        ProjectsApi.getProjectById(projectId),
-        ProjectsApi.getSources(projectId),
-        ProjectsApi.getRPIMappings(projectId),
-      ]);
+    const errors = [];
 
+    // Load each resource independently so a single 500 doesn't kill the whole page
+    let project = null;
+    let projectSources = [];
+    let projectRpi = [];
+
+    try {
+      project = await ProjectsApi.getProjectById(projectId);
+    } catch (err) {
+      errors.push({ resource: 'project', err });
+    }
+
+    try {
+      projectSources = await ProjectsApi.getSources(projectId);
+    } catch (err) {
+      errors.push({ resource: 'sources', err });
+    }
+
+    try {
+      projectRpi = await ProjectsApi.getRPIMappings(projectId);
+    } catch (err) {
+      errors.push({ resource: 'rpi-mappings', err });
+    }
+
+    // Populate project store if we got project data
+    if (project) {
       const index = projects.value.findIndex((p) => p.id === project.id);
       if (index !== -1) {
         projects.value[index] = { ...project, id: Number(project.id) };
       } else {
         projects.value.push({ ...project, id: Number(project.id) });
       }
-
-      // Populate sub-stores
-      const sourcesStore = useSourcesStore();
-      const tablesStore = useMappingTablesStore();
-      const rpiStore = useRPIMappingsStore();
-
-      sourcesStore.sources[projectId] = projectSources;
-      rpiStore.rpiMappings[projectId] = projectRpi;
-
-      const tablesPerSource = await Promise.all(
-        projectSources.map((source) =>
-          ProjectsApi.getMappingTables(projectId, source.id)
-            .then((tables) =>
-              tables.map((t) => ({ ...t, source_id: source.id })),
-            )
-            .catch(() => []),
-        ),
-      );
-      tablesStore.mappingTables[projectId] = tablesPerSource.flat();
-    } catch (err) {
-      error.value =
-        err instanceof ApiError
-          ? err.message
-          : "Не удалось загрузить данные проекта";
-      throw err;
-    } finally {
-      loading.value = false;
     }
+
+    // Populate sub-stores with whatever we managed to load
+    const sourcesStore = useSourcesStore();
+    const tablesStore = useMappingTablesStore();
+    const rpiStore = useRPIMappingsStore();
+
+    if (projectSources.length) {
+      sourcesStore.sources[projectId] = projectSources;
+    }
+
+    if (projectRpi.length) {
+      rpiStore.rpiMappings[projectId] = projectRpi;
+    }
+
+    // Load mapping tables for each source independently
+    const tableResults = await Promise.allSettled(
+      projectSources.map((source) =>
+        ProjectsApi.getMappingTables(projectId, source.id),
+      ),
+    );
+    const allTables = [];
+    tableResults.forEach((result, i) => {
+      if (result.status === 'fulfilled') {
+        result.value.forEach((t) =>
+          allTables.push({ ...t, source_id: projectSources[i].id }),
+        );
+      } else {
+        errors.push({ resource: `tables/source/${projectSources[i].id}`, err: result.reason });
+      }
+    });
+    if (allTables.length) {
+      tablesStore.mappingTables[projectId] = allTables;
+    }
+
+    // If all critical resources failed, show an error
+    if (!project && !projectSources.length) {
+      error.value = "Не удалось загрузить данные проекта";
+    }
+
+    // Log errors to console for debugging
+    if (errors.length) {
+      console.warn(`[loadProjectData] ${errors.length} sub-request(s) failed:`,
+        errors.map((e) => `${e.resource}: ${e.err.message || e.err}`));
+    }
+
+    loading.value = false;
   }
 
   /**
